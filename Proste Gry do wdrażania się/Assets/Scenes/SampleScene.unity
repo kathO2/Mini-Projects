@@ -342,11 +342,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 6.5
-  jumpForce: 8
+  jumpForce: 10
   jumpCut: 0.5
-  maxJumps: 2
+  maxJumps: 1
   baseGravity: 2
-  maxFallSpeed: 18
+  maxFallSpeed: 16
   fallSpeedMultiplier: 2
 --- !u!114 &945769839
 MonoBehaviour:
