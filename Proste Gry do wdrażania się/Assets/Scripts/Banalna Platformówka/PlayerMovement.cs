@@ -20,6 +20,10 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] float coyoteTime = 0.2f;          // Czas na skok po zejściu z krawędzi
     float coyoteTimeCounter;                           // Timer odliczający pozostały coyote time
 
+    [Header("Jump Buffer")]
+    [SerializeField] float jumpBufferTime = 0.2f;      // Czas jump buffer
+    float jumpBufferCounter;                           // Timer odliczający pozostały jump buffer
+
     [Header("Gravity")]
     public float baseGravity = 2f;                     // Normalna grawitacja
     public float maxFallSpeed = 18f;                   // Maksymalna prędkość spadania
@@ -28,18 +32,26 @@ public class PlayerMovement : MonoBehaviour
     bool isGrounded;                                   // Czy postać dotyka ziemi
 
     Rigidbody2D rb;                                    // Komponent fizyczny
-    CapsuleCollider2D feetCollider;                    // Collider do sprawdzania kontaktu z ziemią
+    BoxCollider2D feetCollider;                        // Collider do sprawdzania kontaktu z ziemią
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        feetCollider = GetComponent<CapsuleCollider2D>();
+        feetCollider = GetComponent<BoxCollider2D>();
     }
 
     void Update()
     {
         GroundCheck();   // Sprawdza, czy jesteśmy na ziemi
         Gravity();       // Dostosowuje grawitację w zależności od kierunku ruchu
+
+        // Jeśli gracz nacisnął przycisk skoku niedawno, zmniejszamy licznik jump buffera
+        if (jumpBufferCounter > 0)
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
+        TryJump(); // Sprawdzamy czy można teraz wykonać skok (na podstawie coyoteTime i jumpBuffer)
     }
 
     #region Grawitacja
@@ -48,7 +60,7 @@ public class PlayerMovement : MonoBehaviour
     {
         if (rb.velocity.y < 0)
         {
-            // Spadanie — zwiększamy grawitację i ograniczamy prędkość
+            // Spadanie — zwiększamy grawitację i ograniczamy prędkość spadania
             rb.gravityScale = baseGravity * fallSpeedMultiplier;
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
         }
@@ -77,29 +89,50 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext context)
     {
+        // Ta metoda jest wywoływana przez Input System przy naciśnięciu lub puszczeniu przycisku skoku
+
         if (context.performed)
         {
-            // Skok ze stanu "na ziemi" lub w czasie coyoteTime
-            if (isGrounded || coyoteTimeCounter > 0f)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                coyoteTimeCounter = 0f;
-
-                // Resetujemy dodatkowe skoki po pierwszym
-                jumpsLeft = maxExtraJumps;
-            }
-            // Dodatkowe skoki w powietrzu
-            else if (jumpsLeft > 0)
-            {
-                rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-                jumpsLeft--;
-            }
+            // Gracz nacisnął przycisk skoku — NIE SKACZEMY od razu!
+            // Zamiast tego ustawiamy licznik jumpBufferCounter — oznacza to "chcę skoczyć"
+            jumpBufferCounter = jumpBufferTime;
         }
-        // Skracanie skoku, gdy gracz puszcza przycisk w trakcie wznoszenia
+        // Gracz puścił przycisk skoku — skracamy skok (jump cut), jeśli postać się jeszcze wznosi
         else if (context.canceled && rb.velocity.y > 0)
         {
             rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut);
         }
+    }
+
+    void TryJump()
+    {
+        // Metoda wywoływana w każdej klatce (w Update) — sprawdza, czy można wykonać skok
+        // Tu dopiero faktycznie wykonywany jest skok
+
+        // Jeżeli gracz jest na ziemi LUB jesteśmy jeszcze w "coyote time"
+        // oraz gracz wcześniej nacisnął skok (buffer wciąż aktywny)
+        if ((isGrounded || coyoteTimeCounter > 0f) && jumpBufferCounter > 0f)
+        {
+            // WYKONUJEMY SKOK!
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+
+            // Resetujemy buffery i liczniki
+            coyoteTimeCounter = 0f;
+            jumpBufferCounter = 0f;
+
+            // Resetujemy ilość dodatkowych skoków
+            jumpsLeft = maxExtraJumps;
+        }
+        // Jeżeli jesteśmy w powietrzu, ale mamy jeszcze dodatkowe skoki i aktywny jump buffer
+        else if (jumpBufferCounter > 0f && jumpsLeft > 0)
+        {
+            // WYKONUJEMY DODATKOWY SKOK
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpsLeft--;
+            jumpBufferCounter = 0f;
+        }
+
+        // Jeśli warunki nie są spełnione, nie dzieje się nic — jumpBufferCounter stopniowo wygasa
     }
 
     #endregion
@@ -113,11 +146,13 @@ public class PlayerMovement : MonoBehaviour
 
         if (isGrounded)
         {
-            coyoteTimeCounter = coyoteTime;   // Resetujemy timer coyoteTime
+            // Jesteśmy na ziemi — resetujemy licznik coyoteTime
+            coyoteTimeCounter = coyoteTime;
         }
         else
         {
-            coyoteTimeCounter -= Time.deltaTime;  // Odliczanie czasu od zejścia z platformy
+            // Nie jesteśmy na ziemi — odliczamy pozostały czas coyoteTime
+            coyoteTimeCounter -= Time.deltaTime;
         }
     }
 
