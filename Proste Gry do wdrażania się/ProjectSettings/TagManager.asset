@@ -9,15 +9,15 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Background
   - Water
   - UI
   - Ziemia
   - "\u015Aciana"
-  - 
-  - 
-  - 
-  - 
+  - Powerups
+  - Blocks
+  - Pipes
+  - Mario
   - 
   - 
   - 
@@ -39,6 +39,21 @@ TagManager:
   - 
   - 
   m_SortingLayers:
+  - name: Background
+    uniqueID: 2038529017
+    locked: 0
+  - name: Powerups
+    uniqueID: 6056721
+    locked: 0
+  - name: Mario
+    uniqueID: 1565735575
+    locked: 0
+  - name: Pipes
+    uniqueID: 4269379473
+    locked: 0
+  - name: Blocks
+    uniqueID: 2552158265
+    locked: 0
   - name: Default
     uniqueID: 0
     locked: 0
