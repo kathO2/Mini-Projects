@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class PlayerMovement : MonoBehaviour
+public class BanalnaPlatformowkaMovement: MonoBehaviour
 {
     [Header("Movement")]
     [Range(1f, 20f)] public float moveSpeed = 5f;     // Prędkość ruchu w poziomie
     float horizontalMovement;                         // Wartość wejścia poziomego (od -1 do 1)
+
 
     [Header("Jumping")]
     [Range(1f, 30f)] public float jumpForce = 5f;      // Siła skoku
@@ -16,23 +17,45 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] int maxExtraJumps = 1;            // Liczba dodatkowych skoków po pierwszym
     int jumpsLeft;                                     // Pozostałe dodatkowe skoki (nie licząc pierwszego)
 
+
     [Header("Coyote Time")]
     [SerializeField] float coyoteTime = 0.2f;          // Czas na skok po zejściu z krawędzi
     float coyoteTimeCounter;                           // Timer odliczający pozostały coyote time
+
 
     [Header("Jump Buffer")]
     [SerializeField] float jumpBufferTime = 0.2f;      // Czas jump buffer
     float jumpBufferCounter;                           // Timer odliczający pozostały jump buffer
 
+
+    [Header("WallCheck")]
+    public Transform wallCheckPos;
+    public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f);
+    public LayerMask wallLayer;
+
+
+    [Header("WallMovement")]
+    [Range(1f, 10f)] public float wallSlideSpeed = 2f;
+    bool isWallSliding;
+
+    //Wall Jumping
+    bool isWallJumping;
+    float wallJumpDirection;
+    float wallJumpTime = 0.5f;
+    float wallJumpTimer;
+    [SerializeField] Vector2 wallJumpPower = new Vector2(5f, 5f);
+
+
     [Header("Gravity")]
     public float baseGravity = 2f;                     // Normalna grawitacja
     public float maxFallSpeed = 18f;                   // Maksymalna prędkość spadania
     public float fallSpeedMultiplier = 2f;             // Zwiększa grawitację podczas spadania
-
     bool isGrounded;                                   // Czy postać dotyka ziemi
+
 
     Rigidbody2D rb;                                    // Komponent fizyczny
     BoxCollider2D feetCollider;                        // Collider do sprawdzania kontaktu z ziemią
+
 
     void Awake()
     {
@@ -44,34 +67,17 @@ public class PlayerMovement : MonoBehaviour
     {
         GroundCheck();   // Sprawdza, czy jesteśmy na ziemi
         Gravity();       // Dostosowuje grawitację w zależności od kierunku ruchu
+        TryJump(); // Sprawdzamy czy można teraz wykonać skok (na podstawie coyoteTime i jumpBuffer)
+        FlipSprite();
+        WallSlide();
+        WallJump();
 
         // Jeśli gracz nacisnął przycisk skoku niedawno, zmniejszamy licznik jump buffera
         if (jumpBufferCounter > 0)
         {
             jumpBufferCounter -= Time.deltaTime;
         }
-
-        TryJump(); // Sprawdzamy czy można teraz wykonać skok (na podstawie coyoteTime i jumpBuffer)
     }
-
-    #region Grawitacja
-
-    void Gravity()
-    {
-        if (rb.velocity.y < 0)
-        {
-            // Spadanie — zwiększamy grawitację i ograniczamy prędkość spadania
-            rb.gravityScale = baseGravity * fallSpeedMultiplier;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
-        }
-        else
-        {
-            // Wznoszenie — standardowa grawitacja
-            rb.gravityScale = baseGravity;
-        }
-    }
-
-    #endregion
 
     void FixedUpdate()
     {
@@ -84,6 +90,18 @@ public class PlayerMovement : MonoBehaviour
         // Odczyt wartości z kontrolera / klawiatury
         horizontalMovement = context.ReadValue<Vector2>().x;
     }
+
+    #region FlipSprite
+
+    void FlipSprite()
+    {
+        if (Mathf.Abs(horizontalMovement) > 0.01f)
+        {
+            transform.localScale = new Vector2(Mathf.Sign(horizontalMovement), 1f);
+        }
+    }
+
+    #endregion
 
     #region Skok
 
@@ -101,6 +119,17 @@ public class PlayerMovement : MonoBehaviour
         else if (context.canceled && rb.velocity.y > 0)
         {
             rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut);
+        }
+
+        if (context.performed && wallJumpTimer > 0f)
+        {
+            isWallJumping = true;
+            rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
+            wallJumpTimer = 0;
+
+            
+
+            Invoke(nameof(CancelWallJump), wallJumpTime + 0.1f);
         }
     }
 
@@ -137,6 +166,25 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Grawitacja
+
+    void Gravity()
+    {
+        if (rb.velocity.y < 0)
+        {
+            // Spadanie — zwiększamy grawitację i ograniczamy prędkość spadania
+            rb.gravityScale = baseGravity * fallSpeedMultiplier;
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
+        }
+        else
+        {
+            // Wznoszenie — standardowa grawitacja
+            rb.gravityScale = baseGravity;
+        }
+    }
+
+    #endregion
+
     #region GroundCheck
 
     void GroundCheck()
@@ -157,4 +205,55 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #endregion
+
+    #region Gizmos
+
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
+    }
+
+    #endregion
+
+    bool WallCheck()
+    {
+        return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, wallLayer);
+    }
+
+    void WallSlide()
+    {
+        if (!isGrounded & WallCheck() & horizontalMovement == Mathf.Sign(transform.localScale.x))
+        {
+            isWallSliding = true;
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
+
+            jumpsLeft = maxExtraJumps;
+        }
+        else
+        {
+            isWallSliding = false;
+        }
+    }
+
+    void WallJump()
+    {
+        if (isWallSliding)
+        {
+            isWallJumping = false;
+            wallJumpDirection = -transform.localScale.x;
+            wallJumpTimer = wallJumpTime;
+
+            CancelInvoke(nameof(CancelWallJump));
+        }
+        else if (wallJumpTimer > 0f)
+        {
+            wallJumpTimer -= Time.deltaTime;
+        }
+    }
+
+    void CancelWallJump()
+    {
+        isWallJumping = false;
+    }
 }
