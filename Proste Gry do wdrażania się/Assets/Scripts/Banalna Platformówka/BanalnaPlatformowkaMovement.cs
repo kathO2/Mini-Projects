@@ -6,88 +6,86 @@ using UnityEngine.InputSystem;
 public class BanalnaPlatformowkaMovement : MonoBehaviour
 {
     [Header("Movement")]
-    [Range(1f, 20f)] public float moveSpeed = 5f;     // Prędkość ruchu w poziomie
-    float horizontalMovement;                         // Wartość wejścia poziomego (od -1 do 1)
+    [Range(1f, 20f)] public float moveSpeed = 5f; // Prędkość ruchu w poziomie
+    float horizontalMovement; // Wartość wejścia poziomego (od -1 do 1)
 
 
     [Header("Jumping")]
-    [Range(1f, 30f)] public float jumpForce = 5f;      // Siła skoku
-    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f;  // Skraca skok, jeśli przycisk zostanie puszczony
-    [SerializeField] int maxJumps = 2;                 // Całkowita liczba skoków (1 = podwójny skok)
-    [SerializeField] int maxExtraJumps = 1;            // Liczba dodatkowych skoków po pierwszym
-    int jumpsLeft;                                     // Pozostałe dodatkowe skoki (nie licząc pierwszego)
+    [Range(1f, 30f)] public float jumpForce = 5f; // Siła skoku
+    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f; // Skraca skok, jeśli przycisk zostanie puszczony
+    [SerializeField] int maxJumps = 2; // Całkowita liczba skoków (1 = pojedynczy skok, 2 = podwójny skok)
+    [SerializeField] int maxExtraJumps = 1; // Liczba dodatkowych skoków po pierwszym
+    int jumpsLeft; // Liczba pozostałych dodatkowych skoków
 
 
     [Header("Coyote Time")]
-    [SerializeField] float coyoteTime = 0.2f;          // Czas na skok po zejściu z krawędzi
-    float coyoteTimeCounter;                           // Timer odliczający pozostały coyote time
+    [SerializeField] float coyoteTime = 0.2f; // Czas, w którym można jeszcze skoczyć po zejściu z platformy
+    float coyoteTimeCounter; // Licznik czasu coyote time
 
 
     [Header("Jump Buffer")]
-    [SerializeField] float jumpBufferTime = 0.2f;      // Czas jump buffer
-    float jumpBufferCounter;                           // Timer odliczający pozostały jump buffer
+    [SerializeField] float jumpBufferTime = 0.2f; // Okno czasowe, w którym skok zostanie zapamiętany
+    float jumpBufferCounter; // Licznik buffera skoku
 
 
     [Header("WallCheck")]
-    public Transform wallCheckPos;
-    public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f);
-    public LayerMask wallLayer;
+    public Transform wallCheckPos; // Punkt referencyjny do sprawdzania kolizji ze ścianą
+    public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f); // Rozmiar boxa do detekcji ściany
+    public LayerMask wallLayer; // Warstwa odpowiadająca ścianom
 
 
     [Header("WallMovement")]
-    [Range(1f, 10f)] public float wallSlideSpeed = 2f;
-    bool isWallSliding;
+    [Range(1f, 10f)] public float wallSlideSpeed = 2f; // Prędkość opadania podczas ślizgu po ścianie
+    bool isWallSliding; // Flaga informująca o tym, czy postać ślizga się po ścianie
 
-    //Wall Jumping
-    bool isWallJumping;
-    float wallJumpDirection;
-    float wallJumpTime = 0.5f;
-    float wallJumpTimer;
-    [SerializeField] Vector2 wallJumpPower = new Vector2(5f, 5f);
+
+    // Wall Jumping
+    bool isWallJumping; // Flaga informująca o tym, czy trwa wall jump
+    float wallJumpDirection; // Kierunek odbicia od ściany
+    float wallJumpTime = 0.5f; // Czas na wykonanie wall jumpa po przyklejeniu do ściany
+    float wallJumpTimer; // Licznik wall jumpa
+    [SerializeField] Vector2 wallJumpPower = new Vector2(5f, 5f); // Siła wybicia podczas wall jumpa
 
 
     [Header("Gravity")]
-    public float baseGravity = 2f;                     // Normalna grawitacja
-    public float maxFallSpeed = 18f;                   // Maksymalna prędkość spadania
-    public float fallSpeedMultiplier = 2f;             // Zwiększa grawitację podczas spadania
-    bool isGrounded;                                   // Czy postać dotyka ziemi
+    public float baseGravity = 2f; // Bazowa grawitacja
+    public float maxFallSpeed = 18f; // Maksymalna prędkość opadania
+    public float fallSpeedMultiplier = 2f; // Wzmocnienie grawitacji przy spadaniu
+    bool isGrounded; // Czy postać stoi na ziemi
 
 
-    Rigidbody2D rb;                                    // Komponent fizyczny
-    BoxCollider2D feetCollider;                        // Collider do sprawdzania kontaktu z ziemią
+    Rigidbody2D rb; // Komponent fizyczny
+    BoxCollider2D feetCollider; // Collider służący do sprawdzania kontaktu z podłożem
 
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>();
-        feetCollider = GetComponent<BoxCollider2D>();
+        rb = GetComponent<Rigidbody2D>(); // Przypisanie Rigidbody2D
+        feetCollider = GetComponent<BoxCollider2D>(); // Przypisanie BoxCollider2D
     }
 
     void Update()
     {
-        GroundCheck();   // Sprawdza, czy jesteśmy na ziemi
-        Gravity();       // Dostosowuje grawitację w zależności od kierunku ruchu
-        TryJump(); // Sprawdzamy czy można teraz wykonać skok (na podstawie coyoteTime i jumpBuffer)
-        FlipSprite();
-        WallSlide();
-        WallJump();
+        GroundCheck(); // Sprawdzenie czy stoimy na ziemi
+        Gravity(); // Zastosowanie odpowiedniej siły grawitacji
+        TryJump(); // Próbujemy wykonać skok
+        FlipSprite(); // Odwracamy postać w zależności od kierunku ruchu
+        WallSlide(); // Obsługa ślizgu po ścianie
+        WallJump(); // Obsługa wall jumpa
 
-        // Jeśli gracz nacisnął przycisk skoku niedawno, zmniejszamy licznik jump buffera
         if (jumpBufferCounter > 0)
-        {
-            jumpBufferCounter -= Time.deltaTime;
-        }
+            jumpBufferCounter -= Time.deltaTime; // Zmniejszamy licznik jump buffera
     }
 
     void FixedUpdate()
     {
-        // Poruszanie się w poziomie — fizyka aktualizowana w stałych odstępach
+        // Sterowanie ruchem poziomym
         rb.velocity = new Vector2(horizontalMovement * moveSpeed, rb.velocity.y);
     }
 
     public void Move(InputAction.CallbackContext context)
     {
-        // Odczyt wartości z kontrolera / klawiatury
+        // Odczyt danych z input systemu (ruch w poziomie)
         horizontalMovement = context.ReadValue<Vector2>().x;
     }
 
@@ -95,6 +93,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void FlipSprite()
     {
+        // Obraca sprite'a zgodnie z kierunkiem ruchu
         if (Mathf.Abs(horizontalMovement) > 0.01f)
         {
             transform.localScale = new Vector2(Mathf.Sign(horizontalMovement), 1f);
@@ -103,134 +102,115 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     #endregion
 
-    #region Skok
+    #region Jump
 
     public void Jump(InputAction.CallbackContext context)
     {
-        // Ta metoda jest wywoływana przez Input System przy naciśnięciu lub puszczeniu przycisku skoku
-
         if (context.performed)
         {
-            // Gracz nacisnął przycisk skoku — NIE SKACZEMY od razu!
-            // Zamiast tego ustawiamy licznik jumpBufferCounter — oznacza to "chcę skoczyć"
-            jumpBufferCounter = jumpBufferTime;
+            jumpBufferCounter = jumpBufferTime; // Zapisujemy intencję skoku (jump buffer)
         }
-        // Gracz puścił przycisk skoku — skracamy skok (jump cut), jeśli postać się jeszcze wznosi
         else if (context.canceled && rb.velocity.y > 0)
         {
-            rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut);
+            rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut); // Skrócenie skoku, jeśli gracz puści przycisk
         }
 
+        // Wykonanie wall jumpa, jeśli jesteśmy w czasie pozwalającym na to
         if (context.performed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
             rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
             wallJumpTimer = 0;
 
-
-
-            Invoke(nameof(CancelWallJump), wallJumpTime + 0.1f);
+            Invoke(nameof(CancelWallJump), wallJumpTime + 0.1f); // Dezaktywacja wall jumpa po czasie
         }
     }
 
     void TryJump()
     {
-        // Metoda wywoływana w każdej klatce (w Update) — sprawdza, czy można wykonać skok
-        // Tu dopiero faktycznie wykonywany jest skok
-
-        // Jeżeli gracz jest na ziemi LUB jesteśmy jeszcze w "coyote time"
-        // oraz gracz wcześniej nacisnął skok (buffer wciąż aktywny)
+        // Skok z ziemi lub przy użyciu coyote time
         if ((isGrounded || coyoteTimeCounter > 0f) && jumpBufferCounter > 0f)
         {
-            // WYKONUJEMY SKOK!
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-
-            // Resetujemy buffery i liczniki
             coyoteTimeCounter = 0f;
             jumpBufferCounter = 0f;
-
-            // Resetujemy ilość dodatkowych skoków
-            jumpsLeft = maxExtraJumps;
+            jumpsLeft = maxExtraJumps; // Resetujemy możliwość podwójnego skoku
         }
-        // Jeżeli jesteśmy w powietrzu, ale mamy jeszcze dodatkowe skoki i aktywny jump buffer
+        // Skok w powietrzu, jeśli mamy jeszcze dodatkowe skoki
         else if (jumpBufferCounter > 0f && jumpsLeft > 0)
         {
-            // WYKONUJEMY DODATKOWY SKOK
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpsLeft--;
+            jumpsLeft--; // Zużywamy jeden skok
             jumpBufferCounter = 0f;
         }
-
-        // Jeśli warunki nie są spełnione, nie dzieje się nic — jumpBufferCounter stopniowo wygasa
     }
 
     #endregion
 
-    #region Grawitacja
+    #region Gravity
 
     void Gravity()
     {
         if (rb.velocity.y < 0)
         {
-            // Spadanie — zwiększamy grawitację i ograniczamy prędkość spadania
-            rb.gravityScale = baseGravity * fallSpeedMultiplier;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
+            rb.gravityScale = baseGravity * fallSpeedMultiplier; // Zwiększamy grawitację przy opadaniu
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); // Ograniczamy maksymalną prędkość spadania
         }
         else
         {
-            // Wznoszenie — standardowa grawitacja
-            rb.gravityScale = baseGravity;
+            rb.gravityScale = baseGravity; // Przy normalnym skoku stosujemy bazową grawitację
         }
     }
 
-    #endregion
+    #endregion 
 
     #region GroundCheck
 
     void GroundCheck()
     {
-        // Sprawdzamy kontakt z warstwą "Ziemia"
+        // Sprawdzamy, czy dolny collider dotyka warstwy "Ziemia"
         isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Ziemia"));
 
         if (isGrounded)
         {
-            // Jesteśmy na ziemi — resetujemy licznik coyoteTime
-            coyoteTimeCounter = coyoteTime;
+            coyoteTimeCounter = coyoteTime; // Resetujemy coyote time
         }
         else
         {
-            // Nie jesteśmy na ziemi — odliczamy pozostały czas coyoteTime
-            coyoteTimeCounter -= Time.deltaTime;
+            coyoteTimeCounter -= Time.deltaTime; // Odliczamy czas coyote time
         }
     }
 
     #endregion
 
-    #region Gizmos
-
     void OnDrawGizmosSelected()
     {
+        // Pokazujemy w edytorze obszar detekcji ściany
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
     }
 
-    #endregion
-
-    #region WallCheck & Slide
+    #region WallCheck
 
     bool WallCheck()
     {
+        // Sprawdzamy, czy postać dotyka ściany
         return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, wallLayer);
     }
 
+    #endregion
+    
+    #region WallSlide
+
     void WallSlide()
     {
-        if (!isGrounded & WallCheck() & horizontalMovement == Mathf.Sign(transform.localScale.x))
+        // Sprawdzamy warunki do ślizgu po ścianie: nie stoimy na ziemi, dotykamy ściany, poruszamy się w kierunku ściany
+        if (!isGrounded && WallCheck() && horizontalMovement == Mathf.Sign(transform.localScale.x))
         {
             isWallSliding = true;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed));
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed)); // Ograniczamy prędkość spadania
 
-            jumpsLeft = maxExtraJumps;
+            jumpsLeft = maxExtraJumps; // Resetujemy możliwość skoku w powietrzu
         }
         else
         {
@@ -240,6 +220,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     #endregion
 
+
     #region WallJump
 
     void WallJump()
@@ -247,21 +228,21 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
         if (isWallSliding)
         {
             isWallJumping = false;
-            wallJumpDirection = -transform.localScale.x;
-            wallJumpTimer = wallJumpTime;
+            wallJumpDirection = -transform.localScale.x; // Ustawiamy kierunek odbicia przeciwny do ściany
+            wallJumpTimer = wallJumpTime; // Uruchamiamy timer na możliwość wall jumpa
 
-            CancelInvoke(nameof(CancelWallJump));
+            CancelInvoke(nameof(CancelWallJump)); // Anulujemy poprzednie wywołanie dezaktywacji wall jumpa
         }
         else if (wallJumpTimer > 0f)
         {
-            wallJumpTimer -= Time.deltaTime;
+            wallJumpTimer -= Time.deltaTime; // Odliczamy czas do wykonania wall jumpa
         }
     }
 
     void CancelWallJump()
     {
-        isWallJumping = false;
+        isWallJumping = false; // Kończymy wall jump
     }
-    
+
     #endregion
 }
