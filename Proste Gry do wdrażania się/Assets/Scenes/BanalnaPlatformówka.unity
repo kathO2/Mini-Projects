@@ -233,7 +233,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 519420028}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -10}
+  m_LocalPosition: {x: -0.16, y: 0, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -712,8 +712,8 @@ Rigidbody2D:
   m_UseAutoMass: 0
   m_Mass: 1
   m_LinearDrag: 0
-  m_AngularDrag: 0.05
-  m_GravityScale: 1
+  m_AngularDrag: 0
+  m_GravityScale: 0
   m_Material: {fileID: 6200000, guid: f6ee50df05fbb1149a72931c697cfc4b, type: 2}
   m_Interpolate: 1
   m_SleepingMode: 1
@@ -774,6 +774,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 6.5
+  acceleration: 50
+  deceleration: 25
   jumpForce: 10
   jumpCut: 0.3
   maxJumps: 1
@@ -781,15 +783,15 @@ MonoBehaviour:
   coyoteTime: 0.2
   jumpBufferTime: 0.2
   wallCheckPos: {fileID: 1799080498}
-  wallCheckSize: {x: 0.49, y: 0.03}
+  wallCheckSize: {x: 0.03, y: 0.71}
   wallLayer:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 128
   wallSlideSpeed: 2
   wallJumpPower: {x: 6.5, y: 10}
   baseGravity: 2
   maxFallSpeed: 18
-  fallSpeedMultiplier: 2
+  fallhorizontalMovement: 2
 --- !u!1 &1528697991
 GameObject:
   m_ObjectHideFlags: 0
@@ -802,7 +804,7 @@ GameObject:
   - component: {fileID: 1528697994}
   - component: {fileID: 1528697993}
   - component: {fileID: 1528697992}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Ziemia (4)
   m_TagString: Platform
   m_Icon: {fileID: 0}
@@ -916,7 +918,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1528697991}
   m_LocalRotation: {x: 0, y: 0, z: -0.7071068, w: 0.7071068}
-  m_LocalPosition: {x: -3.65, y: 1.01, z: 0}
+  m_LocalPosition: {x: -5.67, y: 1.01, z: 0}
   m_LocalScale: {x: 11.3354025, y: 0.35987106, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -935,7 +937,7 @@ GameObject:
   - component: {fileID: 1559355172}
   - component: {fileID: 1559355171}
   - component: {fileID: 1559355170}
-  m_Layer: 6
+  m_Layer: 7
   m_Name: Ziemia (3)
   m_TagString: Platform
   m_Icon: {fileID: 0}
@@ -1183,7 +1185,7 @@ Transform:
   m_GameObject: {fileID: 1680761315}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: -7.47, z: 0}
-  m_LocalScale: {x: 21.807, y: 1.3375, z: 1}
+  m_LocalScale: {x: 53.699738, y: 1.3375, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1213,7 +1215,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1799080497}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.377, y: 0, z: 0}
+  m_LocalPosition: {x: 0.399, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

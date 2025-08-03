@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,6 +9,12 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     [Header("Movement")]
     [Range(1f, 20f)] public float moveSpeed = 5f; // Prędkość ruchu w poziomie
     float horizontalMovement; // Wartość wejścia poziomego (od -1 do 1)
+
+
+    [Header("Acceleration/Deceleration")]
+    [Range(1f, 100f)] public float acceleration = 20f;
+    [Range(1f, 100f)] public float deceleration = 25f;
+    float currentSpeed = 0f;
 
 
     [Header("Jumping")]
@@ -50,7 +57,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     [Header("Gravity")]
     public float baseGravity = 2f; // Bazowa grawitacja
     public float maxFallSpeed = 18f; // Maksymalna prędkość opadania
-    public float fallSpeedMultiplier = 2f; // Wzmocnienie grawitacji przy spadaniu
+    public float fallhorizontalMovement = 2f; // Wzmocnienie grawitacji przy spadaniu
     bool isGrounded; // Czy postać stoi na ziemi
 
 
@@ -58,11 +65,17 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     BoxCollider2D feetCollider; // Collider służący do sprawdzania kontaktu z podłożem
 
 
+    #region Awake
+
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>(); // Przypisanie Rigidbody2D
         feetCollider = GetComponent<BoxCollider2D>(); // Przypisanie BoxCollider2D
     }
+
+    #endregion
+
+    #region Update
 
     void Update()
     {
@@ -74,20 +87,41 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
         WallJump(); // Obsługa wall jumpa
 
         if (jumpBufferCounter > 0)
+        {
             jumpBufferCounter -= Time.deltaTime; // Zmniejszamy licznik jump buffera
+        }
     }
+
+    #endregion
+
+    #region FixedUpdate
 
     void FixedUpdate()
     {
-        // Sterowanie ruchem poziomym
-        rb.velocity = new Vector2(horizontalMovement * moveSpeed, rb.velocity.y);
+        float targetSpeed = horizontalMovement * moveSpeed;
+
+        if (Mathf.Abs(horizontalMovement) > 0.01f)
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime); // przyspieszanie(obecna prędkość, maksymalna prędkość, osiągamy tą maksymalną prędkość w określonym tempie)
+        }
+        else
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime); // hamowanie (obecna prędkość, zatrzymanie się całkowite, tempo z jakim schodzimy do zatrzymania się)
+        }
+
+        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
     }
+
+    #endregion
+
+    #region Move
 
     public void Move(InputAction.CallbackContext context)
     {
-        // Odczyt danych z input systemu (ruch w poziomie)
         horizontalMovement = context.ReadValue<Vector2>().x;
     }
+
+    #endregion
 
     #region FlipSprite
 
@@ -153,7 +187,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     {
         if (rb.velocity.y < 0)
         {
-            rb.gravityScale = baseGravity * fallSpeedMultiplier; // Zwiększamy grawitację przy opadaniu
+            rb.gravityScale = baseGravity * fallhorizontalMovement; // Zwiększamy grawitację przy opadaniu
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); // Ograniczamy maksymalną prędkość spadania
         }
         else
