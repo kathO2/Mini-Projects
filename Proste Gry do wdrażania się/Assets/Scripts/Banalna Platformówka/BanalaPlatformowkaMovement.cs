@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class BanalnaPlatformowkaMovement: MonoBehaviour
+public class BanalnaPlatformowkaMovement : MonoBehaviour
 {
     [Header("Movement")]
     [Range(1f, 20f)] public float moveSpeed = 5f;     // Prędkość ruchu w poziomie
@@ -127,7 +127,7 @@ public class BanalnaPlatformowkaMovement: MonoBehaviour
             rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
             wallJumpTimer = 0;
 
-            
+
 
             Invoke(nameof(CancelWallJump), wallJumpTime + 0.1f);
         }
@@ -216,6 +216,8 @@ public class BanalnaPlatformowkaMovement: MonoBehaviour
 
     #endregion
 
+    #region WallCheck & Slide
+
     bool WallCheck()
     {
         return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, wallLayer);
@@ -235,6 +237,10 @@ public class BanalnaPlatformowkaMovement: MonoBehaviour
             isWallSliding = false;
         }
     }
+
+    #endregion
+
+    #region WallJump
 
     void WallJump()
     {
@@ -256,4 +262,6 @@ public class BanalnaPlatformowkaMovement: MonoBehaviour
     {
         isWallJumping = false;
     }
+    
+    #endregion
 }
