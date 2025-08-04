@@ -98,6 +98,11 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isWallJumping)
+        {
+            return;
+        }
+
         float targetSpeed = horizontalMovement * moveSpeed;
 
         if (Mathf.Abs(horizontalMovement) > 0.01f)

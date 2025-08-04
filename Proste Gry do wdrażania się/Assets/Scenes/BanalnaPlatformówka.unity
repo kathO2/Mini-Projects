@@ -781,7 +781,7 @@ MonoBehaviour:
   maxJumps: 1
   maxExtraJumps: 0
   coyoteTime: 0.2
-  jumpBufferTime: 0.2
+  jumpBufferTime: 0.15
   wallCheckPos: {fileID: 1799080498}
   wallCheckSize: {x: 0.03, y: 0.71}
   wallLayer:
