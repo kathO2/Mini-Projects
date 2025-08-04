@@ -100,7 +100,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     {
         if (isWallJumping)
         {
-            return;
+            return;     // jeżeli postać skacze ze ściany - nie nadpisuj jej prędkości, prędkością poruszania się postaci po ziemii
         }
 
         float targetSpeed = horizontalMovement * moveSpeed;
