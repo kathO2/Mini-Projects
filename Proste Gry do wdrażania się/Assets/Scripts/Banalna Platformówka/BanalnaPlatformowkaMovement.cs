@@ -11,8 +11,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     float horizontalMovement; // Wartość wejścia poziomego (od -1 do 1)
 
 
-    [Header("Acceleration/Deceleration")]
-    [Range(1f, 100f)] public float acceleration = 20f;
+    [Header("Deceleration")]
     [Range(1f, 100f)] public float deceleration = 25f;
     float currentSpeed = 0f;
 
@@ -46,12 +45,13 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     bool isWallSliding; // Flaga informująca o tym, czy postać ślizga się po ścianie
 
 
-    // Wall Jumping
+    [Header("WallJump")]
+    [SerializeField] Vector2 wallJumpPower = new Vector2(5f, 5f); // Siła wybicia podczas wall jumpa
     bool isWallJumping; // Flaga informująca o tym, czy trwa wall jump
     float wallJumpDirection; // Kierunek odbicia od ściany
     float wallJumpTime = 0.5f; // Czas na wykonanie wall jumpa po przyklejeniu do ściany
     float wallJumpTimer; // Licznik wall jumpa
-    [SerializeField] Vector2 wallJumpPower = new Vector2(5f, 5f); // Siła wybicia podczas wall jumpa
+    
 
 
     [Header("Gravity")]

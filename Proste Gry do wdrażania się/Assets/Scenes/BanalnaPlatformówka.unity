@@ -839,14 +839,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 6.5
-  acceleration: 50
-  deceleration: 30
+  deceleration: 35
   jumpForce: 10
   jumpCut: 0.3
   maxJumps: 1
   maxExtraJumps: 0
   coyoteTime: 0.2
-  jumpBufferTime: 0.15
+  jumpBufferTime: 0.1
   wallCheckPos: {fileID: 1799080498}
   wallCheckSize: {x: 0.03, y: 0.71}
   wallLayer:
@@ -1591,5 +1590,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bcd9b554b4b301a4f95d887ac0fc3484, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  fallWait: 2
+  fallWait: 0.5
   destroyWait: 1
