@@ -98,16 +98,11 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        if (isWallJumping)
-        {
-            return;     // jeżeli postać skacze ze ściany - nie nadpisuj jej prędkości, prędkością poruszania się postaci po ziemii
-        }
-
         float targetSpeed = horizontalMovement * moveSpeed;
 
         if (Mathf.Abs(horizontalMovement) > 0.01f)
         {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime); // przyspieszanie(obecna prędkość, maksymalna prędkość, osiągamy tą maksymalną prędkość w określonym tempie)
+            currentSpeed = targetSpeed;
         }
         else
         {
@@ -158,7 +153,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
         if (context.performed && wallJumpTimer > 0f)
         {
             isWallJumping = true;
-            rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
+            rb.velocity = new Vector2(currentSpeed, wallJumpPower.y);
             wallJumpTimer = 0;
 
             Invoke(nameof(CancelWallJump), wallJumpTime + 0.1f); // Dezaktywacja wall jumpa po czasie
