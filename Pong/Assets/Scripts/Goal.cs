@@ -17,7 +17,7 @@ public class Goal : MonoBehaviour
     {
         if (collision.gameObject.tag == "Ball")
         {
-            if (!isPlayer1Goal)
+            if (isPlayer1Goal)
             {
                 Debug.Log("Player 2 Scored");
                 gameManager.Player2Scored();
