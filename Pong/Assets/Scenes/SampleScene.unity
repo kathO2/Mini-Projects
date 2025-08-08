@@ -1037,7 +1037,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0ad5e75119177f34bb5ed479102c0c9d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballSpeed: 2.5
+  ballSpeed: 5
   startPosition: {x: 0, y: 0, z: 0}
 --- !u!61 &444976508
 BoxCollider2D:
