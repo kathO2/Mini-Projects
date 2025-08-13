@@ -86,11 +86,6 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
-        if (isWallJumping && rb.velocity.y <= 0)
-        {
-            isWallJumping = false;
-        }
-
         if (!isWallJumping)
         {
             FlipSprite();
@@ -112,6 +107,11 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
         else
         {
             currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
+        }
+
+        if (isWallJumping && rb.velocity.y <= 0)
+        {
+            isWallJumping = false;
         }
 
         if (!isWallJumping)
