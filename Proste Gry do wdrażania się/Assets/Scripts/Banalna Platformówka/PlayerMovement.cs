@@ -21,18 +21,20 @@ public class PlayerMovement : MonoBehaviour
     [Range(0.1f, 0.75f)] public float jumpCut = 0.3f;
 
 
+    [Header("Wall Slide")]
     [SerializeField] Transform wallCheck;
     [SerializeField] LayerMask wallLayer;
     bool isWallSliding;
     public float wallSlidingSpeed = 2f;
 
-    bool isWallJumping;
-    float wallJumpingDirection;
-    float wallJumpingTime = 0.2f;
-    float wallJumpingCounter;
-    float wallJumpingDuration = 0.4f;
-    [SerializeField] Vector2 wallJumpingPower = new Vector2(7f, 11f);
 
+    [Header("Wall Jump")]
+    [SerializeField] Vector2 wallJumpingPower = new Vector2(7f, 11f);
+    [SerializeField] float wallJumpingTime = 0.2f;
+    float wallJumpingCounter;
+    float wallJumpingDirection;
+    bool isWallJumping;
+    
 
     [Header("Gravity")]
     public float baseGravity = 2f;
@@ -86,6 +88,11 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
+        }
+
+        if (isWallJumping && rb.velocity.y <= 0)
+        {
+            isWallJumping = false;
         }
 
         if (!isWallJumping)
@@ -142,8 +149,6 @@ public class PlayerMovement : MonoBehaviour
                 localScale.x *= -1f;
                 transform.localScale = localScale;
             }
-
-            Invoke(nameof(CancelWallJump), wallJumpingDuration);
         }
     }
 
@@ -171,6 +176,11 @@ public class PlayerMovement : MonoBehaviour
     void GroundCheck()
     {
         isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Ziemia"));
+
+        if (isGrounded)
+        {
+            isWallJumping = false;
+        }
     }
 
     private bool IsWalled()
@@ -198,18 +208,11 @@ public class PlayerMovement : MonoBehaviour
             isWallJumping = false;
             wallJumpingDirection = -transform.localScale.x;
             wallJumpingCounter = wallJumpingTime;
-
-            CancelInvoke(nameof(CancelWallJump));
         }
         else
         {
             wallJumpingCounter -= Time.deltaTime;
         }
-    }
-
-    void CancelWallJump()
-    {
-        isWallJumping = false;
     }
 
     #endregion

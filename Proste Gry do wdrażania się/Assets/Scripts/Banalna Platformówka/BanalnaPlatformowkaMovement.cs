@@ -17,11 +17,8 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
 
     [Header("Jumping")]
-    [Range(1f, 30f)] public float jumpForce = 11f;
+    [Range(1f, 30f)] public float jumpForce = 9f;
     [Range(0.1f, 0.75f)] public float jumpCut = 0.3f; 
-    [SerializeField] int maxJumps = 1; 
-    [SerializeField] int maxExtraJumps = 0; 
-    int jumpsLeft; 
 
 
     [Header("Coyote Time")]
@@ -46,19 +43,17 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
 
     [Header("WallJump")]
-    [SerializeField] Vector2 wallJumpPower = new Vector2(7f, 11f); 
+    [SerializeField] Vector2 wallJumpPower = new Vector2(6f, 8f); 
     bool isWallJumping; 
     float wallJumpDirection; 
-    float wallJumpTime = 0.2f; 
+    float wallJumpTime = 0.1f; 
     float wallJumpCounter; 
-    float wallJumpDuration = 0.4f;
-    
 
 
     [Header("Gravity")]
     public float baseGravity = 2f;
     public float maxFallSpeed = 25f;
-    public float fallhorizontalMovement = 3.5f; 
+    public float fallHorizontalSpeed = 3.5f; 
     bool isGrounded;
 
 
@@ -91,6 +86,11 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
         }
 
+        if (isWallJumping && rb.velocity.y <= 0)
+        {
+            isWallJumping = false;
+        }
+
         if (!isWallJumping)
         {
             FlipSprite();
@@ -103,19 +103,19 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        float targetSpeed = horizontalMovement * moveSpeed;
+
+        if (Mathf.Abs(horizontalMovement) > 0.01f)
+        {
+            currentSpeed = targetSpeed;
+        }
+        else
+        {
+            currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
+        }
+
         if (!isWallJumping)
         {
-            float targetSpeed = horizontalMovement * moveSpeed;
-
-            if (Mathf.Abs(horizontalMovement) > 0.01f)
-            {
-                currentSpeed = targetSpeed;
-            }
-            else
-            {
-                currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
-            }
-
             rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
         }
     }
@@ -169,8 +169,6 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
                 localScale.x *= -1f;
                 transform.localScale = localScale;
             }
-
-            Invoke(nameof(CancelWallJump), wallJumpDuration);
         }
     }
 
@@ -180,14 +178,6 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             coyoteTimeCounter = 0f;
-            jumpBufferCounter = 0f;
-            jumpsLeft = maxExtraJumps;
-        }
-        
-        else if (jumpBufferCounter > 0f && jumpsLeft > 0)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpsLeft--;
             jumpBufferCounter = 0f;
         }
     }
@@ -200,7 +190,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     {
         if (rb.velocity.y < 0)
         {
-            rb.gravityScale = baseGravity * fallhorizontalMovement;
+            rb.gravityScale = baseGravity * fallHorizontalSpeed;
             rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); 
         }
         else
@@ -215,11 +205,12 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void GroundCheck()
     {
-        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Ziemia"));
+        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Ziemia", "Ściana"));
 
         if (isGrounded)
         {
             coyoteTimeCounter = coyoteTime;
+            isWallJumping = false;
         }
         else
         {
@@ -248,10 +239,10 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void WallSlide()
     {
-        if (!isGrounded && WallCheck() && horizontalMovement == Mathf.Sign(transform.localScale.x))
+        if (!isGrounded && WallCheck() && horizontalMovement != 0)
         {
             isWallSliding = true;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed)); 
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlideSpeed, float.MaxValue)); 
         }
         else
         {
@@ -271,18 +262,11 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
             isWallJumping = false;
             wallJumpDirection = -transform.localScale.x;
             wallJumpCounter = wallJumpTime; 
-
-            CancelInvoke(nameof(CancelWallJump)); 
         }
         else
         {
             wallJumpCounter -= Time.deltaTime; 
         }
-    }
-
-    void CancelWallJump()
-    {
-        isWallJumping = false;
     }
 
     #endregion
