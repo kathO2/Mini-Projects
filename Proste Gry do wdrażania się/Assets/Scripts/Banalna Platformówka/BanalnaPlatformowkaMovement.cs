@@ -7,70 +7,71 @@ using UnityEngine.InputSystem;
 public class BanalnaPlatformowkaMovement : MonoBehaviour
 {
     [Header("Movement")]
-    [Range(1f, 20f)] public float moveSpeed = 5f; // Prędkość ruchu w poziomie
-    float horizontalMovement; // Wartość wejścia poziomego (od -1 do 1)
+    [Range(1f, 20f)] public float moveSpeed = 7f;
+    float horizontalMovement;
 
 
     [Header("Deceleration")]
-    [Range(1f, 100f)] public float deceleration = 25f;
+    [Range(1f, 100f)] public float deceleration = 45f;
     float currentSpeed = 0f;
 
 
     [Header("Jumping")]
-    [Range(1f, 30f)] public float jumpForce = 5f; // Siła skoku
-    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f; // Skraca skok, jeśli przycisk zostanie puszczony
-    [SerializeField] int maxJumps = 2; // Całkowita liczba skoków (1 = pojedynczy skok, 2 = podwójny skok)
-    [SerializeField] int maxExtraJumps = 1; // Liczba dodatkowych skoków po pierwszym
-    int jumpsLeft; // Liczba pozostałych dodatkowych skoków
+    [Range(1f, 30f)] public float jumpForce = 11f;
+    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f; 
+    [SerializeField] int maxJumps = 1; 
+    [SerializeField] int maxExtraJumps = 0; 
+    int jumpsLeft; 
 
 
     [Header("Coyote Time")]
-    [SerializeField] float coyoteTime = 0.2f; // Czas, w którym można jeszcze skoczyć po zejściu z platformy
-    float coyoteTimeCounter; // Licznik czasu coyote time
+    [SerializeField] float coyoteTime = 0.1f; 
+    float coyoteTimeCounter; 
 
 
     [Header("Jump Buffer")]
-    [SerializeField] float jumpBufferTime = 0.2f; // Okno czasowe, w którym skok zostanie zapamiętany
-    float jumpBufferCounter; // Licznik buffera skoku
+    [SerializeField] float jumpBufferTime = 0.1f; 
+    float jumpBufferCounter; 
 
 
     [Header("WallCheck")]
-    public Transform wallCheckPos; // Punkt referencyjny do sprawdzania kolizji ze ścianą
-    public Vector2 wallCheckSize = new Vector2(0.49f, 0.03f); // Rozmiar boxa do detekcji ściany
-    public LayerMask wallLayer; // Warstwa odpowiadająca ścianom
+    public Transform wallCheckPos; 
+    public Vector2 wallCheckSize = new Vector2(0.03f, 0.71f); 
+    public LayerMask wallLayer; 
 
 
     [Header("WallMovement")]
-    [Range(1f, 10f)] public float wallSlideSpeed = 2f; // Prędkość opadania podczas ślizgu po ścianie
-    bool isWallSliding; // Flaga informująca o tym, czy postać ślizga się po ścianie
+    [Range(1f, 10f)] public float wallSlideSpeed = 2f; 
+    bool isWallSliding; 
 
 
     [Header("WallJump")]
-    [SerializeField] Vector2 wallJumpPower = new Vector2(5f, 5f); // Siła wybicia podczas wall jumpa
-    bool isWallJumping; // Flaga informująca o tym, czy trwa wall jump
-    float wallJumpDirection; // Kierunek odbicia od ściany
-    float wallJumpTime = 0.5f; // Czas na wykonanie wall jumpa po przyklejeniu do ściany
-    float wallJumpTimer; // Licznik wall jumpa
+    [SerializeField] Vector2 wallJumpPower = new Vector2(7f, 11f); 
+    bool isWallJumping; 
+    float wallJumpDirection; 
+    float wallJumpTime = 0.2f; 
+    float wallJumpCounter; 
+    float wallJumpDuration = 0.4f;
     
 
 
     [Header("Gravity")]
-    public float baseGravity = 2f; // Bazowa grawitacja
-    public float maxFallSpeed = 18f; // Maksymalna prędkość opadania
-    public float fallhorizontalMovement = 2f; // Wzmocnienie grawitacji przy spadaniu
-    bool isGrounded; // Czy postać stoi na ziemi
+    public float baseGravity = 2f;
+    public float maxFallSpeed = 25f;
+    public float fallhorizontalMovement = 3.5f; 
+    bool isGrounded;
 
 
-    Rigidbody2D rb; // Komponent fizyczny
-    BoxCollider2D feetCollider; // Collider służący do sprawdzania kontaktu z podłożem
+    Rigidbody2D rb;
+    BoxCollider2D feetCollider;
 
 
     #region Awake
 
     void Awake()
     {
-        rb = GetComponent<Rigidbody2D>(); // Przypisanie Rigidbody2D
-        feetCollider = GetComponent<BoxCollider2D>(); // Przypisanie BoxCollider2D
+        rb = GetComponent<Rigidbody2D>();
+        feetCollider = GetComponent<BoxCollider2D>(); 
     }
 
     #endregion
@@ -79,16 +80,20 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void Update()
     {
-        GroundCheck(); // Sprawdzenie czy stoimy na ziemi
-        Gravity(); // Zastosowanie odpowiedniej siły grawitacji
-        TryJump(); // Próbujemy wykonać skok
-        FlipSprite(); // Odwracamy postać w zależności od kierunku ruchu
-        WallSlide(); // Obsługa ślizgu po ścianie
-        WallJump(); // Obsługa wall jumpa
+        GroundCheck();
+        Gravity();
+        TryJump(); 
+        WallSlide(); 
+        WallJump(); 
 
         if (jumpBufferCounter > 0)
         {
-            jumpBufferCounter -= Time.deltaTime; // Zmniejszamy licznik jump buffera
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
+        if (!isWallJumping)
+        {
+            FlipSprite();
         }
     }
 
@@ -98,18 +103,21 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        float targetSpeed = horizontalMovement * moveSpeed;
-
-        if (Mathf.Abs(horizontalMovement) > 0.01f)
+        if (!isWallJumping)
         {
-            currentSpeed = targetSpeed;
-        }
-        else
-        {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime); // hamowanie (obecna prędkość, zatrzymanie się całkowite, tempo z jakim schodzimy do zatrzymania się)
-        }
+            float targetSpeed = horizontalMovement * moveSpeed;
 
-        rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+            if (Mathf.Abs(horizontalMovement) > 0.01f)
+            {
+                currentSpeed = targetSpeed;
+            }
+            else
+            {
+                currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
+            }
+
+            rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+        }
     }
 
     #endregion
@@ -127,7 +135,6 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void FlipSprite()
     {
-        // Obraca sprite'a zgodnie z kierunkiem ruchu
         if (Mathf.Abs(horizontalMovement) > 0.01f)
         {
             transform.localScale = new Vector2(Mathf.Sign(horizontalMovement), 1f);
@@ -142,39 +149,45 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     {
         if (context.performed)
         {
-            jumpBufferCounter = jumpBufferTime; // Zapisujemy intencję skoku (jump buffer)
+            jumpBufferCounter = jumpBufferTime;
         }
         else if (context.canceled && rb.velocity.y > 0)
         {
-            rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut); // Skrócenie skoku, jeśli gracz puści przycisk
+            rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut);
         }
 
-        // Wykonanie wall jumpa, jeśli jesteśmy w czasie pozwalającym na to
-        if (context.performed && wallJumpTimer > 0f)
+        if (context.performed && wallJumpCounter > 0f)
         {
             isWallJumping = true;
-            rb.velocity = new Vector2(currentSpeed, wallJumpPower.y);
-            wallJumpTimer = 0;
+            rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
+            wallJumpCounter = 0f;
+            jumpBufferCounter = 0f;
 
-            Invoke(nameof(CancelWallJump), wallJumpTime + 0.1f); // Dezaktywacja wall jumpa po czasie
+            if (transform.localScale.x != wallJumpDirection)
+            {
+                Vector3 localScale = transform.localScale;
+                localScale.x *= -1f;
+                transform.localScale = localScale;
+            }
+
+            Invoke(nameof(CancelWallJump), wallJumpDuration);
         }
     }
 
     void TryJump()
     {
-        // Skok z ziemi lub przy użyciu coyote time
         if ((isGrounded || coyoteTimeCounter > 0f) && jumpBufferCounter > 0f)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             coyoteTimeCounter = 0f;
             jumpBufferCounter = 0f;
-            jumpsLeft = maxExtraJumps; // Resetujemy możliwość podwójnego skoku
+            jumpsLeft = maxExtraJumps;
         }
-        // Skok w powietrzu, jeśli mamy jeszcze dodatkowe skoki
+        
         else if (jumpBufferCounter > 0f && jumpsLeft > 0)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpsLeft--; // Zużywamy jeden skok
+            jumpsLeft--;
             jumpBufferCounter = 0f;
         }
     }
@@ -187,12 +200,12 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     {
         if (rb.velocity.y < 0)
         {
-            rb.gravityScale = baseGravity * fallhorizontalMovement; // Zwiększamy grawitację przy opadaniu
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); // Ograniczamy maksymalną prędkość spadania
+            rb.gravityScale = baseGravity * fallhorizontalMovement;
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); 
         }
         else
         {
-            rb.gravityScale = baseGravity; // Przy normalnym skoku stosujemy bazową grawitację
+            rb.gravityScale = baseGravity; 
         }
     }
 
@@ -202,16 +215,15 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void GroundCheck()
     {
-        // Sprawdzamy, czy dolny collider dotyka warstwy "Ziemia"
         isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Ziemia"));
 
         if (isGrounded)
         {
-            coyoteTimeCounter = coyoteTime; // Resetujemy coyote time
+            coyoteTimeCounter = coyoteTime;
         }
         else
         {
-            coyoteTimeCounter -= Time.deltaTime; // Odliczamy czas coyote time
+            coyoteTimeCounter -= Time.deltaTime;
         }
     }
 
@@ -219,7 +231,6 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void OnDrawGizmosSelected()
     {
-        // Pokazujemy w edytorze obszar detekcji ściany
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
     }
@@ -228,7 +239,6 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     bool WallCheck()
     {
-        // Sprawdzamy, czy postać dotyka ściany
         return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, wallLayer);
     }
 
@@ -238,13 +248,10 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
     void WallSlide()
     {
-        // Sprawdzamy warunki do ślizgu po ścianie: nie stoimy na ziemi, dotykamy ściany, poruszamy się w kierunku ściany
         if (!isGrounded && WallCheck() && horizontalMovement == Mathf.Sign(transform.localScale.x))
         {
             isWallSliding = true;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed)); // Ograniczamy prędkość spadania
-
-            jumpsLeft = maxExtraJumps; // Resetujemy możliwość skoku w powietrzu
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -wallSlideSpeed)); 
         }
         else
         {
@@ -262,20 +269,20 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
         if (isWallSliding)
         {
             isWallJumping = false;
-            wallJumpDirection = -transform.localScale.x; // Ustawiamy kierunek odbicia przeciwny do ściany
-            wallJumpTimer = wallJumpTime; // Uruchamiamy timer na możliwość wall jumpa
+            wallJumpDirection = -transform.localScale.x;
+            wallJumpCounter = wallJumpTime; 
 
-            CancelInvoke(nameof(CancelWallJump)); // Anulujemy poprzednie wywołanie dezaktywacji wall jumpa
+            CancelInvoke(nameof(CancelWallJump)); 
         }
-        else if (wallJumpTimer > 0f)
+        else
         {
-            wallJumpTimer -= Time.deltaTime; // Odliczamy czas do wykonania wall jumpa
+            wallJumpCounter -= Time.deltaTime; 
         }
     }
 
     void CancelWallJump()
     {
-        isWallJumping = false; // Kończymy wall jump
+        isWallJumping = false;
     }
 
     #endregion
