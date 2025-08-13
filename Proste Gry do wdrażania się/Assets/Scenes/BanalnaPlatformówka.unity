@@ -604,7 +604,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
-  deceleration: 40
+  deceleration: 37.5
   jumpForce: 10
   jumpCut: 0.3
   coyoteTime: 0.1
