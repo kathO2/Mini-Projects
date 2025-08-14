@@ -11,8 +11,9 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     float horizontalMovement;
 
 
-    [Header("Deceleration")]
-    [Range(1f, 100f)] public float deceleration = 45f;
+    [Header("Acceleration & Deceleration")]
+    [Range(1f, 300f)] public float acceleration = 45f;
+    [Range(1f, 100f)] public float deceleration = 60f;
     float currentSpeed = 0f;
 
 
@@ -40,7 +41,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
     [Header("WallMovement")]
     [Range(1f, 10f)] public float wallSlideSpeed = 2f; 
     bool isWallSliding; 
-
+    
 
     [Header("WallJump")]
     [SerializeField] Vector2 wallJumpPower = new Vector2(6f, 8f); 
@@ -102,7 +103,7 @@ public class BanalnaPlatformowkaMovement : MonoBehaviour
 
         if (Mathf.Abs(horizontalMovement) > 0.01f)
         {
-            currentSpeed = targetSpeed;
+            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
         }
         else
         {
