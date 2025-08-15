@@ -22,6 +22,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Ghost",
+                    "type": "Button",
+                    "id": "76f474e6-83ae-4cca-8069-4efb48d8601e",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -170,12 +179,12 @@
                 },
                 {
                     "name": "",
-                    "id": "a61237f1-af9c-424f-87b5-6e9d1ca58c6b",
-                    "path": "<Keyboard>/upArrow",
+                    "id": "017490f9-2a10-42bc-b0b1-f3095e712787",
+                    "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Jump",
+                    "action": "Ghost",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

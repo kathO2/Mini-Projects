@@ -11,36 +11,55 @@ public class PlayerMovement : MonoBehaviour
     float horizontalMovement;
 
 
-    [Header("Deceleration")]
-    [Range(1f, 100f)] public float deceleration = 45f;
+    [Header("Acceleration & Deceleration")]
+    [Range(1f, 100f)] public float acceleration = 60f;
+    [Range(1f, 100f)] public float deceleration = 75f;
     float currentSpeed = 0f;
 
 
     [Header("Jumping")]
-    [Range(1f, 30f)] public float jumpForce = 11f;
-    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f;
+    [Range(1f, 30f)] public float jumpForce = 9f;
+    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f; 
 
 
-    [Header("Wall Slide")]
-    [SerializeField] Transform wallCheck;
-    [SerializeField] LayerMask wallLayer;
-    bool isWallSliding;
-    public float wallSlidingSpeed = 2f;
+    [Header("Coyote Time")]
+    [SerializeField] float coyoteTime = 0.1f; 
+    float coyoteTimeCounter; 
 
 
-    [Header("Wall Jump")]
-    [SerializeField] Vector2 wallJumpingPower = new Vector2(7f, 11f);
-    [SerializeField] float wallJumpingTime = 0.2f;
-    float wallJumpingCounter;
-    float wallJumpingDirection;
-    bool isWallJumping;
+    [Header("Jump Buffer")]
+    [SerializeField] float jumpBufferTime = 0.1f; 
+    float jumpBufferCounter; 
+
+
+    [Header("WallCheck")]
+    public Transform wallCheckPos; 
+    public Vector2 wallCheckSize = new Vector2(0.03f, 0.71f); 
+    public LayerMask wallLayer; 
+
+
+    [Header("WallMovement")]
+    [Range(1f, 10f)] public float wallSlideSpeed = 2f; 
+    bool isWallSliding; 
     
+
+    [Header("WallJump")]
+    [SerializeField] Vector2 wallJumpPower = new Vector2(6f, 8f); 
+    bool isWallJumping; 
+    float wallJumpDirection; 
+    float wallJumpTime = 0.1f; 
+    float wallJumpCounter; 
+
 
     [Header("Gravity")]
     public float baseGravity = 2f;
     public float maxFallSpeed = 25f;
-    public float fallHorizontalMovement = 3.5f;
+    public float fallHorizontalSpeed = 3.5f; 
     bool isGrounded;
+
+    [Header("Ghost")]
+    [SerializeField] GameObject ghost;
+    [SerializeField] Transform ghostSpawner;
 
 
     Rigidbody2D rb;
@@ -52,24 +71,7 @@ public class PlayerMovement : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        feetCollider = GetComponent<BoxCollider2D>();
-    }
-
-    #endregion
-
-    #region Update
-
-    void Update()
-    {
-        GroundCheck();
-        Gravity();
-        WallSlide();
-        WallJump();
-
-        if (!isWallJumping)
-        {
-            FlipSprite();
-        }
+        feetCollider = GetComponent<BoxCollider2D>(); 
     }
 
     #endregion
@@ -78,12 +80,11 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-
         float targetSpeed = horizontalMovement * moveSpeed;
 
         if (Mathf.Abs(horizontalMovement) > 0.01f)
         {
-            currentSpeed = targetSpeed;
+            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
         }
         else
         {
@@ -98,6 +99,29 @@ public class PlayerMovement : MonoBehaviour
         if (!isWallJumping)
         {
             rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+        }
+    }
+
+    #endregion
+
+    #region Update
+
+    void Update()
+    {
+        GroundCheck();
+        Gravity();
+        TryJump(); 
+        WallSlide(); 
+        WallJump(); 
+
+        if (jumpBufferCounter > 0)
+        {
+            jumpBufferCounter -= Time.deltaTime;
+        }
+
+        if (!isWallJumping)
+        {
+            FlipSprite();
         }
     }
 
@@ -128,27 +152,38 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext context)
     {
-        if (context.performed && isGrounded)
+        if (context.performed)
         {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            jumpBufferCounter = jumpBufferTime;
         }
         else if (context.canceled && rb.velocity.y > 0)
         {
             rb.velocity = new Vector2(0f, rb.velocity.y * jumpCut);
         }
 
-        if (context.performed && wallJumpingCounter > 0)
+        if (context.performed && wallJumpCounter > 0f)
         {
             isWallJumping = true;
-            rb.velocity = new Vector2(wallJumpingDirection * wallJumpingPower.x, wallJumpingPower.y);
-            wallJumpingCounter = 0f;
+            rb.velocity = new Vector2(wallJumpDirection * wallJumpPower.x, wallJumpPower.y);
+            wallJumpCounter = 0f;
+            jumpBufferCounter = 0f;
 
-            if (transform.localScale.x != wallJumpingDirection)
+            if (transform.localScale.x != wallJumpDirection)
             {
                 Vector3 localScale = transform.localScale;
                 localScale.x *= -1f;
                 transform.localScale = localScale;
             }
+        }
+    }
+
+    void TryJump()
+    {
+        if ((isGrounded || coyoteTimeCounter > 0f) && jumpBufferCounter > 0f)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            coyoteTimeCounter = 0f;
+            jumpBufferCounter = 0f;
         }
     }
 
@@ -160,12 +195,12 @@ public class PlayerMovement : MonoBehaviour
     {
         if (rb.velocity.y < 0)
         {
-            rb.gravityScale = baseGravity * fallHorizontalMovement;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
+            rb.gravityScale = baseGravity * fallHorizontalSpeed;
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); 
         }
         else
         {
-            rb.gravityScale = baseGravity;
+            rb.gravityScale = baseGravity; 
         }
     }
 
@@ -175,25 +210,44 @@ public class PlayerMovement : MonoBehaviour
 
     void GroundCheck()
     {
-        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Ziemia"));
+        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall"));
 
         if (isGrounded)
         {
+            coyoteTimeCounter = coyoteTime;
             isWallJumping = false;
+        }
+        else
+        {
+            coyoteTimeCounter -= Time.deltaTime;
         }
     }
 
-    private bool IsWalled()
+    #endregion
+
+    void OnDrawGizmosSelected()
     {
-        return Physics2D.OverlapCircle(wallCheck.position, 0.2f, wallLayer);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(wallCheckPos.position, wallCheckSize);
     }
+
+    #region WallCheck
+
+    bool WallCheck()
+    {
+        return Physics2D.OverlapBox(wallCheckPos.position, wallCheckSize, 0, wallLayer);
+    }
+
+    #endregion
+    
+    #region WallSlide
 
     void WallSlide()
     {
-        if (IsWalled() && !isGrounded && horizontalMovement != 0)
+        if (!isGrounded && WallCheck() && horizontalMovement != 0)
         {
             isWallSliding = true;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlidingSpeed, float.MaxValue));
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlideSpeed, float.MaxValue)); 
         }
         else
         {
@@ -201,19 +255,32 @@ public class PlayerMovement : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region WallJump
+
     void WallJump()
     {
         if (isWallSliding)
         {
             isWallJumping = false;
-            wallJumpingDirection = -transform.localScale.x;
-            wallJumpingCounter = wallJumpingTime;
+            wallJumpDirection = -transform.localScale.x;
+            wallJumpCounter = wallJumpTime; 
         }
         else
         {
-            wallJumpingCounter -= Time.deltaTime;
+            wallJumpCounter -= Time.deltaTime; 
         }
     }
 
     #endregion
+
+    public void Ghost(InputAction.CallbackContext context)
+    {
+        if (context.performed)
+        {
+            Instantiate(ghost, ghostSpawner.position, transform.rotation);
+            Debug.Log("GHOST");
+        }
+    }
 }
