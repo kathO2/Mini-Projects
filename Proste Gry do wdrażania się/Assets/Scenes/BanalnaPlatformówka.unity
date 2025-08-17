@@ -686,7 +686,7 @@ MonoBehaviour:
   fallHorizontalSpeed: 3
   ghostObject: {fileID: 264495900127679034, guid: c6ac6a50632fd9940988d4cc8ee5936b, type: 3}
   ghostSpeed: 40
-  ghostLifeTime: 0.25
+  ghostLifeTime: 0.15
   ghostSpawner: {fileID: 171019779}
 --- !u!1 &978358292
 GameObject:
