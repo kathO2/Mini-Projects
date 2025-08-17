@@ -19,59 +19,63 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Jumping")]
     [Range(1f, 30f)] public float jumpForce = 9f;
-    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f; 
+    [Range(0.1f, 0.75f)] public float jumpCut = 0.3f;
 
 
     [Header("Coyote Time")]
-    [SerializeField] float coyoteTime = 0.1f; 
-    float coyoteTimeCounter; 
+    [SerializeField] float coyoteTime = 0.1f;
+    float coyoteTimeCounter;
 
 
     [Header("Jump Buffer")]
-    [SerializeField] float jumpBufferTime = 0.1f; 
-    float jumpBufferCounter; 
+    [SerializeField] float jumpBufferTime = 0.1f;
+    float jumpBufferCounter;
 
 
     [Header("WallCheck")]
-    public Transform wallCheckPos; 
-    public Vector2 wallCheckSize = new Vector2(0.03f, 0.71f); 
-    public LayerMask wallLayer; 
+    public Transform wallCheckPos;
+    public Vector2 wallCheckSize = new Vector2(0.03f, 0.71f);
+    public LayerMask wallLayer;
 
 
     [Header("WallMovement")]
-    [Range(1f, 10f)] public float wallSlideSpeed = 2f; 
-    bool isWallSliding; 
-    
+    [Range(1f, 10f)] public float wallSlideSpeed = 2f;
+    bool isWallSliding;
+
 
     [Header("WallJump")]
-    [SerializeField] Vector2 wallJumpPower = new Vector2(6f, 8f); 
-    bool isWallJumping; 
-    float wallJumpDirection; 
-    float wallJumpTime = 0.1f; 
-    float wallJumpCounter; 
+    [SerializeField] Vector2 wallJumpPower = new Vector2(6f, 8f);
+    bool isWallJumping;
+    float wallJumpDirection;
+    float wallJumpTime = 0.1f;
+    float wallJumpCounter;
 
 
     [Header("Gravity")]
     public float baseGravity = 2f;
     public float maxFallSpeed = 25f;
-    public float fallHorizontalSpeed = 3.5f; 
+    public float fallHorizontalSpeed = 3.5f;
     bool isGrounded;
 
-    [Header("Ghost")]
-    [SerializeField] GameObject ghost;
+    [Header("Ghosting")]
+    [SerializeField] GameObject ghostObject;
+    [SerializeField] float ghostSpeed = 20f;
+    [SerializeField] float ghostLifeTime = 0.5f;
     [SerializeField] Transform ghostSpawner;
+    Vector2 ghostDir;
+    bool isGhosting;
+    bool hasGhostedInAir = false; // Nowa flaga, aby sprawdzić, czy duch został wypuszczony w powietrzu
 
 
     Rigidbody2D rb;
     BoxCollider2D feetCollider;
-
 
     #region Awake
 
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
-        feetCollider = GetComponent<BoxCollider2D>(); 
+        feetCollider = GetComponent<BoxCollider2D>();
     }
 
     #endregion
@@ -110,9 +114,9 @@ public class PlayerMovement : MonoBehaviour
     {
         GroundCheck();
         Gravity();
-        TryJump(); 
-        WallSlide(); 
-        WallJump(); 
+        TryJump();
+        WallSlide();
+        WallJump();
 
         if (jumpBufferCounter > 0)
         {
@@ -196,20 +200,21 @@ public class PlayerMovement : MonoBehaviour
         if (rb.velocity.y < 0)
         {
             rb.gravityScale = baseGravity * fallHorizontalSpeed;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed)); 
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Max(rb.velocity.y, -maxFallSpeed));
         }
         else
         {
-            rb.gravityScale = baseGravity; 
+            rb.gravityScale = baseGravity;
         }
     }
 
-    #endregion 
+    #endregion
 
     #region GroundCheck
 
     void GroundCheck()
     {
+        bool wasGrounded = isGrounded;
         isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall"));
 
         if (isGrounded)
@@ -220,6 +225,12 @@ public class PlayerMovement : MonoBehaviour
         else
         {
             coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        // Resetowanie dasha po dotknięciu ziemi
+        if (!wasGrounded && isGrounded)
+        {
+            hasGhostedInAir = false;
         }
     }
 
@@ -239,7 +250,7 @@ public class PlayerMovement : MonoBehaviour
     }
 
     #endregion
-    
+
     #region WallSlide
 
     void WallSlide()
@@ -247,7 +258,7 @@ public class PlayerMovement : MonoBehaviour
         if (!isGrounded && WallCheck() && horizontalMovement != 0)
         {
             isWallSliding = true;
-            rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlideSpeed, float.MaxValue)); 
+            rb.velocity = new Vector2(rb.velocity.x, Mathf.Clamp(rb.velocity.y, -wallSlideSpeed, float.MaxValue));
         }
         else
         {
@@ -265,22 +276,54 @@ public class PlayerMovement : MonoBehaviour
         {
             isWallJumping = false;
             wallJumpDirection = -transform.localScale.x;
-            wallJumpCounter = wallJumpTime; 
+            wallJumpCounter = wallJumpTime;
         }
         else
         {
-            wallJumpCounter -= Time.deltaTime; 
+            wallJumpCounter -= Time.deltaTime;
         }
     }
 
     #endregion
 
+    public void GhostDirection(InputAction.CallbackContext context)
+    {
+        ghostDir = context.ReadValue<Vector2>();
+    }
+
+    #region Ghost
+
     public void Ghost(InputAction.CallbackContext context)
     {
+        // Sprawdzamy, czy klawisz został wciśnięty
         if (context.performed)
         {
-            Instantiate(ghost, ghostSpawner.position, transform.rotation);
-            Debug.Log("GHOST");
+            // Na ziemi mozna uzywac w nieskonczonosc, w powietrzu tylko raz
+            if (isGrounded || !hasGhostedInAir)
+            {
+                // Jeśli jesteśmy w powietrzu, ustawiamy flagę, że już użyliśmy dasha
+                if (!isGrounded)
+                {
+                    hasGhostedInAir = true;
+                }
+
+                Vector2 finalDashDir = ghostDir;
+
+                if (finalDashDir == Vector2.zero)
+                {
+                    finalDashDir = new Vector2(transform.localScale.x, 0f);
+                }
+                else
+                {
+                    finalDashDir.Normalize();
+                }
+
+                GameObject instance = Instantiate(ghostObject, ghostSpawner.position, Quaternion.identity);
+                Rigidbody2D ghostRb = instance.GetComponent<Rigidbody2D>();
+                ghostRb.velocity = finalDashDir * ghostSpeed;
+                Destroy(instance, ghostLifeTime);
+            }
         }
     }
+    #endregion
 }
