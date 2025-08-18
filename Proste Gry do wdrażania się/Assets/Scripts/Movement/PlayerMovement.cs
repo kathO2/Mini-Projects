@@ -59,12 +59,16 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ghosting")]
     [SerializeField] GameObject ghostObject;
-    [SerializeField] float ghostSpeed = 20f;
-    [SerializeField] float ghostLifeTime = 0.5f;
+    [Range(1f, 50f)] [SerializeField] float ghostSpeed = 20f;
+    [Range(0.01f, 1f)] [SerializeField] float ghostLifeTime = 0.5f;
     [SerializeField] Transform ghostSpawner;
     Vector2 ghostDir;
     bool isGhosting;
-    bool hasGhostedInAir = false; // Nowa flaga, aby sprawdzić, czy duch został wypuszczony w powietrzu
+    bool hasGhostedInAir = false;
+    bool shouldGhost = false;
+
+    // Referencja do aktywnego ducha, by upewnić się, że jest tylko jeden
+    private GameObject currentGhost;
 
 
     Rigidbody2D rb;
@@ -103,6 +107,22 @@ public class PlayerMovement : MonoBehaviour
         if (!isWallJumping)
         {
             rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+        }
+
+        if (shouldGhost)
+        {
+            currentGhost = Instantiate(ghostObject, ghostSpawner.position, Quaternion.identity);
+            Rigidbody2D ghostRb = currentGhost.GetComponent<Rigidbody2D>();
+            ghostRb.velocity = ghostDir * ghostSpeed;
+            
+            // Przekazujemy ghostLifeTime do skryptu GhostCollision
+            GhostCollision ghostCollision = currentGhost.GetComponent<GhostCollision>();
+            if (ghostCollision != null)
+            {
+                ghostCollision.InitializeGhost(this, ghostLifeTime);
+            }
+
+            shouldGhost = false;
         }
     }
 
@@ -227,7 +247,6 @@ public class PlayerMovement : MonoBehaviour
             coyoteTimeCounter -= Time.deltaTime;
         }
 
-        // Resetowanie dasha po dotknięciu ziemi
         if (!wasGrounded && isGrounded)
         {
             hasGhostedInAir = false;
@@ -295,35 +314,33 @@ public class PlayerMovement : MonoBehaviour
 
     public void Ghost(InputAction.CallbackContext context)
     {
-        // Sprawdzamy, czy klawisz został wciśnięty
-        if (context.performed)
+        if (context.performed && currentGhost == null)
         {
-            // Na ziemi mozna uzywac w nieskonczonosc, w powietrzu tylko raz
             if (isGrounded || !hasGhostedInAir)
             {
-                // Jeśli jesteśmy w powietrzu, ustawiamy flagę, że już użyliśmy dasha
                 if (!isGrounded)
                 {
                     hasGhostedInAir = true;
                 }
 
-                Vector2 finalDashDir = ghostDir;
-
-                if (finalDashDir == Vector2.zero)
+                if (ghostDir == Vector2.zero)
                 {
-                    finalDashDir = new Vector2(transform.localScale.x, 0f);
+                    ghostDir = new Vector2(transform.localScale.x, 0f);
                 }
                 else
                 {
-                    finalDashDir.Normalize();
+                    ghostDir.Normalize();
                 }
 
-                GameObject instance = Instantiate(ghostObject, ghostSpawner.position, Quaternion.identity);
-                Rigidbody2D ghostRb = instance.GetComponent<Rigidbody2D>();
-                ghostRb.velocity = finalDashDir * ghostSpeed;
-                Destroy(instance, ghostLifeTime);
+                shouldGhost = true;
             }
         }
     }
     #endregion
+
+    // Publiczna metoda wywoływana przez obiekt ducha, gdy ten zostanie zniszczony
+    public void OnGhostDestroyed()
+    {
+        currentGhost = null;
+    }
 }
