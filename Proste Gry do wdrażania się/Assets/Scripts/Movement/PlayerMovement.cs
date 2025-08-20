@@ -59,7 +59,7 @@ public class PlayerMovement : MonoBehaviour
 
     [Header("Ghosting")]
     [SerializeField] GameObject ghostObject;
-    [Range(1f, 50f)] [SerializeField] float ghostSpeed = 20f;
+    [Range(1f, 100f)] [SerializeField] float ghostSpeed = 20f;
     [Range(0.01f, 1f)] [SerializeField] float ghostLifeTime = 0.5f;
     [SerializeField] Transform ghostSpawner;
     Vector2 ghostDir;
@@ -72,6 +72,7 @@ public class PlayerMovement : MonoBehaviour
 
 
     Rigidbody2D rb;
+    CapsuleCollider2D bodyCollider;
     BoxCollider2D feetCollider;
 
     #region Awake
@@ -79,6 +80,7 @@ public class PlayerMovement : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        bodyCollider = GetComponent<CapsuleCollider2D>();
         feetCollider = GetComponent<BoxCollider2D>();
     }
 
