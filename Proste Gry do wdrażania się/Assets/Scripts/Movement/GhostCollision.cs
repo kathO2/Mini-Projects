@@ -4,24 +4,39 @@ public class GhostCollision : MonoBehaviour
 {
     private PlayerMovement playerMovement;
     
-    // Publiczna metoda inicjalizująca ducha
+    private Rigidbody2D rb;
+    private bool isStopped = false;
+
     public void InitializeGhost(PlayerMovement player, float lifeTime)
     {
         playerMovement = player;
-        Destroy(gameObject, lifeTime);
+        rb = GetComponent<Rigidbody2D>();
+        Invoke("StopGhost", lifeTime);
     }
     
-    void OnTriggerEnter2D(Collider2D other)
+    void StopGhost()
     {
-        // Sprawdzamy, czy duch zderzył się z warstwą "Platform"
-        if (other.gameObject.layer == LayerMask.NameToLayer("Platform"))
+        if (rb != null && !isStopped)
         {
-            // Niszczymy obiekt, co wywoła metodę OnDestroy()
-            Destroy(gameObject);
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0;
+            isStopped = true;
+            if (playerMovement != null)
+            {
+                playerMovement.StartAttraction(transform.position);
+            }
         }
     }
     
-    // Ta metoda jest wywoływana, gdy obiekt jest niszczony, niezależnie od przyczyny
+    void OnCollisionEnter2D(Collision2D other)
+    {
+        if (other.gameObject.layer == LayerMask.NameToLayer("Platform") || other.gameObject.layer == LayerMask.NameToLayer("Wall"))
+        {
+            CancelInvoke("StopGhost");
+            StopGhost();
+        }
+    }
+    
     void OnDestroy()
     {
         if (playerMovement != null)

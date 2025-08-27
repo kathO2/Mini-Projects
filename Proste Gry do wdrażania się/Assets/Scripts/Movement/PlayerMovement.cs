@@ -62,13 +62,17 @@ public class PlayerMovement : MonoBehaviour
     [Range(1f, 100f)] [SerializeField] float ghostSpeed = 20f;
     [Range(0.01f, 1f)] [SerializeField] float ghostLifeTime = 0.5f;
     [SerializeField] Transform ghostSpawner;
+    [Range(1f, 100f)] [SerializeField] float attractionSpeed = 50f;
+    [SerializeField] float attractionStopDistance = 0.1f;
     Vector2 ghostDir;
     bool isGhosting;
     bool hasGhostedInAir = false;
+    bool canGhostInAir = true;
     bool shouldGhost = false;
 
-    // Referencja do aktywnego ducha, by upewnić się, że jest tylko jeden
     private GameObject currentGhost;
+    private bool isAttracted = false;
+    private Vector2 attractionTargetPosition;
 
 
     Rigidbody2D rb;
@@ -90,41 +94,59 @@ public class PlayerMovement : MonoBehaviour
 
     void FixedUpdate()
     {
-        float targetSpeed = horizontalMovement * moveSpeed;
-
-        if (Mathf.Abs(horizontalMovement) > 0.01f)
+        if (isAttracted)
         {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
+            Vector2 direction = attractionTargetPosition - (Vector2)transform.position;
+            float distance = direction.magnitude;
+
+            if (distance < 0.05f || rb.velocity.magnitude < 0.1f)
+            {
+                transform.position = attractionTargetPosition;
+                EndAttraction();
+                return;
+            }
+
+            float speed = Mathf.Clamp(distance, 0f, 1f) * attractionSpeed;
+
+            rb.velocity = direction.normalized * speed;
         }
         else
         {
-            currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
-        }
+            float targetSpeed = horizontalMovement * moveSpeed;
 
-        if (isWallJumping && rb.velocity.y <= 0)
-        {
-            isWallJumping = false;
-        }
-
-        if (!isWallJumping)
-        {
-            rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
-        }
-
-        if (shouldGhost)
-        {
-            currentGhost = Instantiate(ghostObject, ghostSpawner.position, Quaternion.identity);
-            Rigidbody2D ghostRb = currentGhost.GetComponent<Rigidbody2D>();
-            ghostRb.velocity = ghostDir * ghostSpeed;
-            
-            // Przekazujemy ghostLifeTime do skryptu GhostCollision
-            GhostCollision ghostCollision = currentGhost.GetComponent<GhostCollision>();
-            if (ghostCollision != null)
+            if (Mathf.Abs(horizontalMovement) > 0.01f)
             {
-                ghostCollision.InitializeGhost(this, ghostLifeTime);
+                currentSpeed = Mathf.MoveTowards(currentSpeed, targetSpeed, acceleration * Time.fixedDeltaTime);
+            }
+            else
+            {
+                currentSpeed = Mathf.MoveTowards(currentSpeed, 0f, deceleration * Time.fixedDeltaTime);
             }
 
-            shouldGhost = false;
+            if (isWallJumping && rb.velocity.y <= 0)
+            {
+                isWallJumping = false;
+            }
+
+            if (!isWallJumping)
+            {
+                rb.velocity = new Vector2(currentSpeed, rb.velocity.y);
+            }
+
+            if (shouldGhost)
+            {
+                currentGhost = Instantiate(ghostObject, ghostSpawner.position, Quaternion.identity);
+                Rigidbody2D ghostRb = currentGhost.GetComponent<Rigidbody2D>();
+                ghostRb.velocity = ghostDir * ghostSpeed;
+                
+                GhostCollision ghostCollision = currentGhost.GetComponent<GhostCollision>();
+                if (ghostCollision != null)
+                {
+                    ghostCollision.InitializeGhost(this, ghostLifeTime);
+                }
+
+                shouldGhost = false;
+            }
         }
     }
 
@@ -134,20 +156,23 @@ public class PlayerMovement : MonoBehaviour
 
     void Update()
     {
-        GroundCheck();
-        Gravity();
-        TryJump();
-        WallSlide();
-        WallJump();
-
-        if (jumpBufferCounter > 0)
+        if (!isAttracted)
         {
-            jumpBufferCounter -= Time.deltaTime;
-        }
+            GroundCheck();
+            Gravity();
+            TryJump();
+            WallSlide();
+            WallJump();
+            
+            if (jumpBufferCounter > 0)
+            {
+                jumpBufferCounter -= Time.deltaTime;
+            }
 
-        if (!isWallJumping)
-        {
-            FlipSprite();
+            if (!isWallJumping)
+            {
+                FlipSprite();
+            }
         }
     }
 
@@ -157,7 +182,10 @@ public class PlayerMovement : MonoBehaviour
 
     public void Move(InputAction.CallbackContext context)
     {
-        horizontalMovement = context.ReadValue<Vector2>().x;
+        if (!isAttracted)
+        {
+            horizontalMovement = context.ReadValue<Vector2>().x;
+        }
     }
 
     #endregion
@@ -178,6 +206,8 @@ public class PlayerMovement : MonoBehaviour
 
     public void Jump(InputAction.CallbackContext context)
     {
+        if (isAttracted) return;
+        
         if (context.performed)
         {
             jumpBufferCounter = jumpBufferTime;
@@ -252,6 +282,7 @@ public class PlayerMovement : MonoBehaviour
         if (!wasGrounded && isGrounded)
         {
             hasGhostedInAir = false;
+            canGhostInAir = true;
         }
     }
 
@@ -307,24 +338,30 @@ public class PlayerMovement : MonoBehaviour
 
     #endregion
 
+    #region Ghost
+
     public void GhostDirection(InputAction.CallbackContext context)
     {
         ghostDir = context.ReadValue<Vector2>();
     }
 
-    #region Ghost
-
     public void Ghost(InputAction.CallbackContext context)
     {
         if (context.performed && currentGhost == null)
         {
-            if (isGrounded || !hasGhostedInAir)
+            if (isGrounded)
             {
-                if (!isGrounded)
-                {
-                    hasGhostedInAir = true;
-                }
+                shouldGhost = true;
+                canGhostInAir = false; 
+            }
+            else if (canGhostInAir)
+            {
+                shouldGhost = true;
+                canGhostInAir = false;
+            }
 
+            if (shouldGhost)
+            {
                 if (ghostDir == Vector2.zero)
                 {
                     ghostDir = new Vector2(transform.localScale.x, 0f);
@@ -333,16 +370,58 @@ public class PlayerMovement : MonoBehaviour
                 {
                     ghostDir.Normalize();
                 }
-
-                shouldGhost = true;
             }
         }
     }
     #endregion
 
-    // Publiczna metoda wywoływana przez obiekt ducha, gdy ten zostanie zniszczony
     public void OnGhostDestroyed()
     {
         currentGhost = null;
+    }
+    
+    public void StartAttraction(Vector2 targetPosition)
+    {
+        isAttracted = true;
+        attractionTargetPosition = targetPosition;
+        rb.gravityScale = 0f;
+        
+        // WYCZYŚĆ PRĘDKOŚĆ GRACZA W MOMENCIE ROZPOCZĘCIA PRZYCIĄGANIA
+        rb.velocity = Vector2.zero;
+        
+        if (!IsGhostInWall(targetPosition))
+        {
+            SetPlayerColliders(false);
+        }
+        
+        jumpBufferCounter = 0f;
+        coyoteTimeCounter = 0f;
+    }
+
+    private void EndAttraction()
+    {
+        isAttracted = false;
+        rb.gravityScale = baseGravity;
+        
+        SetPlayerColliders(true);
+        
+        rb.velocity = Vector2.zero;
+
+        if (currentGhost != null)
+        {
+            Destroy(currentGhost);
+            currentGhost = null;
+        }
+    }
+    
+    private void SetPlayerColliders(bool state)
+    {
+        bodyCollider.enabled = state;
+        feetCollider.enabled = state;
+    }
+    
+    private bool IsGhostInWall(Vector2 point)
+    {
+        return Physics2D.OverlapPoint(point, wallLayer);
     }
 }
