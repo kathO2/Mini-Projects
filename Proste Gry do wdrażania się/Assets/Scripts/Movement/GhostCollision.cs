@@ -11,7 +11,7 @@ public class GhostCollision : MonoBehaviour
         Destroy(gameObject, lifeTime);
     }
     
-    void OnCollisionEnter2D(Collision2D other)
+    void OnTriggerEnter2D(Collider2D other)
     {
         // Sprawdzamy, czy duch zderzył się z warstwą "Platform"
         if (other.gameObject.layer == LayerMask.NameToLayer("Platform"))
