@@ -670,7 +670,7 @@ MonoBehaviour:
   moveSpeed: 7
   acceleration: 60
   deceleration: 75
-  jumpForce: 9
+  jumpForce: 10
   jumpCut: 0.3
   coyoteTime: 0.1
   jumpBufferTime: 0.1
