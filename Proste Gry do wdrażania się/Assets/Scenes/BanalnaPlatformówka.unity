@@ -486,7 +486,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 945769843}
-        m_TargetAssemblyTypeName: BanalnaPlatformowkaMovement, Assembly-CSharp
+        m_TargetAssemblyTypeName: PlayerDashMovement, Assembly-CSharp
         m_MethodName: Move
         m_Mode: 0
         m_Arguments:
@@ -502,7 +502,7 @@ MonoBehaviour:
   - m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 945769843}
-        m_TargetAssemblyTypeName: BanalnaPlatformowkaMovement, Assembly-CSharp
+        m_TargetAssemblyTypeName: PlayerDashMovement, Assembly-CSharp
         m_MethodName: Jump
         m_Mode: 0
         m_Arguments:
@@ -557,7 +557,7 @@ MonoBehaviour:
     m_ActionName: UI/TrackedDeviceOrientation
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 945769843}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: BanalnaPlatformowkaMovement, Assembly-CSharp
         m_MethodName: Ghost
         m_Mode: 0
@@ -573,7 +573,7 @@ MonoBehaviour:
     m_ActionName: Player/Ghost[/Keyboard/z]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 945769843}
+      - m_Target: {fileID: 0}
         m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
         m_MethodName: GhostDirection
         m_Mode: 0
@@ -664,13 +664,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 945769830}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 979c4e328519036478c2ccdda1be8412, type: 3}
+  m_Script: {fileID: 11500000, guid: 0ca4b0b19fd734a4bbf6659c492e0d22, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
   acceleration: 60
   deceleration: 75
-  jumpForce: 10
+  jumpForce: 9
   jumpCut: 0.3
   coyoteTime: 0.1
   jumpBufferTime: 0.1
@@ -680,16 +680,10 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 128
   wallSlideSpeed: 2
-  wallJumpPower: {x: 5, y: 8}
+  wallJumpPower: {x: 6, y: 8}
   baseGravity: 2
-  maxFallSpeed: 18
-  fallHorizontalSpeed: 3
-  ghostObject: {fileID: 264495900127679034, guid: c6ac6a50632fd9940988d4cc8ee5936b, type: 3}
-  ghostSpeed: 35
-  ghostLifeTime: 0.1
-  ghostSpawner: {fileID: 171019779}
-  attractionSpeed: 50
-  attractionStopDistance: 0.01
+  maxFallSpeed: 25
+  fallHorizontalSpeed: 3.5
 --- !u!1 &978358292
 GameObject:
   m_ObjectHideFlags: 0
