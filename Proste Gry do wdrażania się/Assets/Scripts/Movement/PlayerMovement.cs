@@ -96,19 +96,15 @@ public class PlayerMovement : MonoBehaviour
     {
         if (isAttracted)
         {
-            Vector2 direction = attractionTargetPosition - (Vector2)transform.position;
-            float distance = direction.magnitude;
-
-            if (distance < 0.05f || rb.velocity.magnitude < 0.1f)
+            // Nowa, ulepszona logika przyciągania
+            transform.position = Vector2.MoveTowards(transform.position, attractionTargetPosition, attractionSpeed * Time.fixedDeltaTime);
+            
+            // Sprawdzamy dystans, aby zakończyć przyciąganie precyzyjnie
+            if (Vector2.Distance(transform.position, attractionTargetPosition) < 0.01f)
             {
-                transform.position = attractionTargetPosition;
                 EndAttraction();
-                return;
             }
-
-            float speed = Mathf.Clamp(distance, 0f, 1f) * attractionSpeed;
-
-            rb.velocity = direction.normalized * speed;
+            return;
         }
         else
         {
