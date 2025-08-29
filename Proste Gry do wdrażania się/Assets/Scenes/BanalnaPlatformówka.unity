@@ -557,9 +557,9 @@ MonoBehaviour:
     m_ActionName: UI/TrackedDeviceOrientation
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: BanalnaPlatformowkaMovement, Assembly-CSharp
-        m_MethodName: Ghost
+      - m_Target: {fileID: 945769843}
+        m_TargetAssemblyTypeName: PlayerDashMovement, Assembly-CSharp
+        m_MethodName: Dash
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -573,9 +573,9 @@ MonoBehaviour:
     m_ActionName: Player/Ghost[/Keyboard/z]
   - m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 0}
-        m_TargetAssemblyTypeName: PlayerMovement, Assembly-CSharp
-        m_MethodName: GhostDirection
+      - m_Target: {fileID: 945769843}
+        m_TargetAssemblyTypeName: PlayerDashMovement, Assembly-CSharp
+        m_MethodName: DashDirection
         m_Mode: 0
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -684,6 +684,8 @@ MonoBehaviour:
   baseGravity: 2
   maxFallSpeed: 25
   fallHorizontalSpeed: 3.5
+  dashingSpeed: 25
+  dashingTime: 0.125
 --- !u!1 &978358292
 GameObject:
   m_ObjectHideFlags: 0

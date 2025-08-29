@@ -55,7 +55,15 @@ public class PlayerDashMovement : MonoBehaviour
     public float baseGravity = 2f;
     public float maxFallSpeed = 25f;
     public float fallHorizontalSpeed = 3.5f;
-    bool isGrounded;
+    private bool isGrounded; // Zmienione na private
+
+    [Header("Dash")]
+    [SerializeField] float dashingSpeed = 25f;
+    [SerializeField] float dashingTime = 0.2f;
+    Vector2 dashingDir;
+    bool isDashing;
+    bool canDash = true;
+    float originalGravity;
 
 
     Rigidbody2D rb;
@@ -69,6 +77,7 @@ public class PlayerDashMovement : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<CapsuleCollider2D>();
         feetCollider = GetComponent<BoxCollider2D>();
+        originalGravity = rb.gravityScale;
     }
 
     #endregion
@@ -77,6 +86,12 @@ public class PlayerDashMovement : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (isDashing)
+        {
+            rb.velocity = dashingDir * dashingSpeed;
+            return;
+        }
+
         float targetSpeed = horizontalMovement * moveSpeed;
 
         if (Mathf.Abs(horizontalMovement) > 0.01f)
@@ -110,7 +125,7 @@ public class PlayerDashMovement : MonoBehaviour
         TryJump();
         WallSlide();
         WallJump();
-            
+
         if (jumpBufferCounter > 0)
         {
             jumpBufferCounter -= Time.deltaTime;
@@ -128,7 +143,7 @@ public class PlayerDashMovement : MonoBehaviour
 
     public void Move(InputAction.CallbackContext context)
     {
-        
+
         horizontalMovement = context.ReadValue<Vector2>().x;
 
     }
@@ -150,7 +165,7 @@ public class PlayerDashMovement : MonoBehaviour
     #region Jump
 
     public void Jump(InputAction.CallbackContext context)
-    { 
+    {
         if (context.performed)
         {
             jumpBufferCounter = jumpBufferTime;
@@ -211,6 +226,11 @@ public class PlayerDashMovement : MonoBehaviour
     {
         bool wasGrounded = isGrounded;
         isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall"));
+
+        if (!wasGrounded && isGrounded)
+        {
+            canDash = true; // Zresetuj dasha tylko raz po wylądowaniu
+        }
 
         if (isGrounded)
         {
@@ -274,4 +294,35 @@ public class PlayerDashMovement : MonoBehaviour
     }
 
     #endregion
+
+    public void Dash(InputAction.CallbackContext context)
+    {
+        if (context.performed && canDash)
+        {
+            isDashing = true;
+            canDash = false;
+            Vector2 inputDirection = GetComponent<PlayerInput>().actions["Move"].ReadValue<Vector2>();
+
+            if (inputDirection == Vector2.zero)
+            {
+                dashingDir = new Vector2(transform.localScale.x, 0f);
+            }
+            else
+            {
+                dashingDir = inputDirection.normalized;
+            }
+
+            rb.velocity = Vector2.zero;
+            rb.gravityScale = 0f;
+            StartCoroutine(StopDashing());
+        }
+    }
+
+    IEnumerator StopDashing()
+    {
+        yield return new WaitForSeconds(dashingTime);
+        isDashing = false;
+        rb.gravityScale = originalGravity;
+        rb.velocity = Vector2.zero;
+    }
 }

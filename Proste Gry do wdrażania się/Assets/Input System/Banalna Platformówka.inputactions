@@ -24,7 +24,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Ghost",
+                    "name": "Dash",
                     "type": "Button",
                     "id": "76f474e6-83ae-4cca-8069-4efb48d8601e",
                     "expectedControlType": "Button",
@@ -33,7 +33,7 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Ghost Direction",
+                    "name": "Dash Direction",
                     "type": "Value",
                     "id": "94957c5a-0055-44d4-90a7-04bcddb459b3",
                     "expectedControlType": "Vector2",
@@ -193,7 +193,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost",
+                    "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -204,7 +204,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Gamepad",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -215,7 +215,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -226,7 +226,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -237,7 +237,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -248,7 +248,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -259,7 +259,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -270,7 +270,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -281,7 +281,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -292,7 +292,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -303,7 +303,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -314,7 +314,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "XR",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -325,7 +325,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
-                    "action": "Ghost Direction",
+                    "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
