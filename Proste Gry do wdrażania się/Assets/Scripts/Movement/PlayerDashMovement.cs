@@ -64,6 +64,7 @@ public class PlayerDashMovement : MonoBehaviour
     bool isDashing;
     bool canDash = true;
     float originalGravity;
+    bool justDashed; // Nowa zmienna
 
 
     Rigidbody2D rb;
@@ -134,6 +135,16 @@ public class PlayerDashMovement : MonoBehaviour
         if (!isWallJumping)
         {
             FlipSprite();
+        }
+
+        if (isGrounded && !justDashed)
+        {
+            canDash = true;
+        }
+
+        if (!isGrounded)
+        {
+            justDashed = false;
         }
     }
 
@@ -227,11 +238,6 @@ public class PlayerDashMovement : MonoBehaviour
         bool wasGrounded = isGrounded;
         isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall"));
 
-        if (!wasGrounded && isGrounded)
-        {
-            canDash = true; // Zresetuj dasha tylko raz po wylądowaniu
-        }
-
         if (isGrounded)
         {
             coyoteTimeCounter = coyoteTime;
@@ -300,7 +306,8 @@ public class PlayerDashMovement : MonoBehaviour
         if (context.performed && canDash)
         {
             isDashing = true;
-            canDash = false;
+            justDashed = true; // Zaznacz, że postać właśnie wykonała dasha
+
             Vector2 inputDirection = GetComponent<PlayerInput>().actions["Move"].ReadValue<Vector2>();
 
             if (inputDirection == Vector2.zero)
@@ -310,6 +317,11 @@ public class PlayerDashMovement : MonoBehaviour
             else
             {
                 dashingDir = inputDirection.normalized;
+            }
+
+            if (Mathf.Abs(dashingDir.y) > 0.01f || !isGrounded)
+            {
+                canDash = false;
             }
 
             rb.velocity = Vector2.zero;
