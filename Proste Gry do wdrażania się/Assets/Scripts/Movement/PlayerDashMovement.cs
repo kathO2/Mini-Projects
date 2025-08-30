@@ -301,6 +301,8 @@ public class PlayerDashMovement : MonoBehaviour
 
     #endregion
 
+    #region Dash
+
     public void Dash(InputAction.CallbackContext context)
     {
         if (context.performed && canDash)
@@ -330,6 +332,10 @@ public class PlayerDashMovement : MonoBehaviour
         }
     }
 
+    #endregion
+
+    #region StopDashing
+
     IEnumerator StopDashing()
     {
         yield return new WaitForSeconds(dashingTime);
@@ -337,4 +343,6 @@ public class PlayerDashMovement : MonoBehaviour
         rb.gravityScale = originalGravity;
         rb.velocity = Vector2.zero;
     }
+
+    #endregion
 }

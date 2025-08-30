@@ -639,7 +639,7 @@ BoxCollider2D:
   m_Enabled: 1
   m_Density: 1
   m_Material: {fileID: 0}
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_UsedByComposite: 0
   m_Offset: {x: 0.0033547878, y: -0.45686805}
@@ -668,8 +668,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
-  acceleration: 60
-  deceleration: 75
+  acceleration: 50
+  deceleration: 65
   jumpForce: 10
   jumpCut: 0.3
   coyoteTime: 0.1
@@ -684,7 +684,7 @@ MonoBehaviour:
   baseGravity: 2
   maxFallSpeed: 25
   fallHorizontalSpeed: 3.5
-  dashingSpeed: 25
+  dashingSpeed: 20
   dashingTime: 0.125
 --- !u!1 &978358292
 GameObject:
