@@ -15,7 +15,7 @@ TagManager:
   - Platform
   - Wall
   - Player
-  - Ghost
+  - Dash
   - 
   - 
   - 
@@ -42,7 +42,7 @@ TagManager:
   - name: Background
     uniqueID: 2038529017
     locked: 0
-  - name: Ghost
+  - name: Dash
     uniqueID: 4269379473
     locked: 0
   - name: Player

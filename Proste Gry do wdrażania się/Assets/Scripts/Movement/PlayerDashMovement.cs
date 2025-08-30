@@ -65,6 +65,12 @@ public class PlayerDashMovement : MonoBehaviour
     bool canDash = true;
     float originalGravity;
     bool justDashed; // Nowa zmienna
+    int playerLayer;
+    int dashLayer;
+    int dashCheckLayer;
+
+    [Header("Dash Trigger")]
+    [SerializeField] CapsuleCollider2D dashTrigger;
 
 
     Rigidbody2D rb;
@@ -79,6 +85,9 @@ public class PlayerDashMovement : MonoBehaviour
         bodyCollider = GetComponent<CapsuleCollider2D>();
         feetCollider = GetComponent<BoxCollider2D>();
         originalGravity = rb.gravityScale;
+        playerLayer = gameObject.layer;
+        dashLayer = LayerMask.NameToLayer("Dash");
+        dashCheckLayer = LayerMask.NameToLayer("DashCheck");
     }
 
     #endregion
@@ -310,6 +319,8 @@ public class PlayerDashMovement : MonoBehaviour
             isDashing = true;
             justDashed = true; // Zaznacz, że postać właśnie wykonała dasha
 
+            bodyCollider.gameObject.layer = dashLayer;
+
             Vector2 inputDirection = GetComponent<PlayerInput>().actions["Move"].ReadValue<Vector2>();
 
             if (inputDirection == Vector2.zero)
@@ -338,10 +349,18 @@ public class PlayerDashMovement : MonoBehaviour
 
     IEnumerator StopDashing()
     {
-        yield return new WaitForSeconds(dashingTime);
+        float startTime = Time.time;
+
+        while (Time.time < startTime + dashingTime || dashTrigger.IsTouchingLayers(LayerMask.GetMask("Wall")))
+        {
+            yield return null;
+        }
+
         isDashing = false;
         rb.gravityScale = originalGravity;
         rb.velocity = Vector2.zero;
+
+        bodyCollider.gameObject.layer = playerLayer;
     }
 
     #endregion
