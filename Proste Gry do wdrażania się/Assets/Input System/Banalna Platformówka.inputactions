@@ -177,6 +177,17 @@
                 },
                 {
                     "name": "",
+                    "id": "e470df48-5665-477e-9327-fece99bee6e0",
+                    "path": "<XInputController>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Move",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "fe67aa59-2fa0-4798-9b62-f459ebf900f1",
                     "path": "<Keyboard>/space",
                     "interactions": "",
@@ -188,11 +199,55 @@
                 },
                 {
                     "name": "",
+                    "id": "4ee007b4-8eb1-420e-ba18-29a15d55b151",
+                    "path": "<Gamepad>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "30c0c89c-479e-478c-8a24-1840b0635c7a",
+                    "path": "<XInputController>/buttonSouth",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Jump",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
                     "id": "017490f9-2a10-42bc-b0b1-f3095e712787",
                     "path": "<Keyboard>/z",
                     "interactions": "",
                     "processors": "",
                     "groups": "Keyboard&Mouse",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e32df35c-e590-40d2-afd5-9714b1abe1c4",
+                    "path": "<Gamepad>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
+                    "action": "Dash",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "8ccb70a9-b8eb-43cd-a720-1499eb404ef6",
+                    "path": "<XInputController>/rightTrigger",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
                     "action": "Dash",
                     "isComposite": false,
                     "isPartOfComposite": false
@@ -325,6 +380,17 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "Joystick",
+                    "action": "Dash Direction",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "13241c6c-8ea2-4dd4-8c9e-5932e1bef91b",
+                    "path": "<XInputController>/leftStick",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Gamepad",
                     "action": "Dash Direction",
                     "isComposite": false,
                     "isPartOfComposite": false

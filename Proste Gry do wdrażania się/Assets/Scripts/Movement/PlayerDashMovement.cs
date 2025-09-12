@@ -355,6 +355,12 @@ public class PlayerDashMovement : MonoBehaviour
     }
 
     #endregion
+    
+    // Metoda zaokrąglająca kąt do najbliższej wielokrotności stopnia.
+    float RoundAngle(float angle, float step)
+    {
+        return Mathf.Round(angle / step) * step;
+    }
 
     #region Dash
 
@@ -380,7 +386,11 @@ public class PlayerDashMovement : MonoBehaviour
             }
             else
             {
-                dashingDir = inputDirection.normalized;
+                float angle = Mathf.Atan2(inputDirection.y, inputDirection.x) * Mathf.Rad2Deg; // Oblicz kąt wektora wejścia.
+                angle = RoundAngle(angle, 45f); // Zaokrąglaj kąt do najbliższej wielokrotności 45 stopni (0, 45, 90, etc.).
+
+                // Konwertuj zaokrąglony kąt z powrotem na wektor kierunku.
+                dashingDir = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad)).normalized;
             }
 
             // Uniemożliwienie ponownego dasha, jeśli wykonano go w powietrzu lub w pionie.
