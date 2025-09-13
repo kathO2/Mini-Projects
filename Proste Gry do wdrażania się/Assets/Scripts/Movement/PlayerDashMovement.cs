@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 
 public class PlayerDashMovement : MonoBehaviour
 {
+    #region Movement & Speed
+
     [Header("Movement")]
     [Range(1f, 20f)] public float moveSpeed = 7f; // Prędkość poruszania się postaci.
     float horizontalMovement; // Przechowuje dane wejścia poziomego (z klawiszy A/D lub gałki).
@@ -16,6 +18,9 @@ public class PlayerDashMovement : MonoBehaviour
     [Range(1f, 100f)] public float deceleration = 75f; // Szybkość zwalniania.
     float currentSpeed = 0f; // Aktualna prędkość pozioma postaci.
 
+    #endregion
+
+    #region  Jumping
 
     [Header("Jumping")]
     [Range(1f, 30f)] public float jumpForce = 9f; // Siła skoku.
@@ -31,6 +36,9 @@ public class PlayerDashMovement : MonoBehaviour
     [SerializeField] float jumpBufferTime = 0.1f; // Czas, w którym naciśnięcie skoku jest buforowane przed zetknięciem z ziemią.
     float jumpBufferCounter; // Licznik buforu skoku.
 
+    #endregion
+
+    #region Wall Mechanics
 
     [Header("WallCheck")]
     public Transform wallCheckPos; // Obiekt, z którego sprawdzane jest położenie ściany.
@@ -50,12 +58,19 @@ public class PlayerDashMovement : MonoBehaviour
     float wallJumpTime = 0.1f; // Krótki czas opóźnienia, aby skok od ściany był bardziej przewidywalny.
     float wallJumpCounter; // Licznik skoku od ściany.
 
+    #endregion
+
+    #region Gravity
 
     [Header("Gravity")]
     public float baseGravity = 2f; // Podstawowa siła grawitacji.
     public float maxFallSpeed = 25f; // Maksymalna prędkość spadania.
     public float fallHorizontalSpeed = 3.5f; // Modyfikator grawitacji podczas spadania.
     private bool isGrounded; // Flaga, czy postać jest na ziemi.
+
+    #endregion
+
+    #region Dash
 
     [Header("Dash")]
     [SerializeField] float dashingSpeed = 25f; // Prędkość dasha.
@@ -72,11 +87,16 @@ public class PlayerDashMovement : MonoBehaviour
     [Header("Dash Trigger")]
     [SerializeField] CapsuleCollider2D dashTrigger; // Referencja do kolidera-triggera do sprawdzania utknięcia.
 
+    #endregion
+
+    #region Components
 
     // Referencje do komponentów.
     Rigidbody2D rb;
     CapsuleCollider2D bodyCollider;
     BoxCollider2D feetCollider;
+
+    #endregion
 
     #region Awake
 
