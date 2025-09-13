@@ -20,6 +20,8 @@ public class PlayerDashMovement : MonoBehaviour
 
     #endregion
 
+    [SerializeField] BoxCollider2D feetCollider;
+
     #region  Jumping
 
     [Header("Jumping")]
@@ -82,7 +84,7 @@ public class PlayerDashMovement : MonoBehaviour
     bool justDashed; // Flaga używana do resetowania dasha po dotknięciu ziemi.
     int playerLayer; // Numer warstwy "Player".
     int dashLayer; // Numer warstwy "Dash".
-    int dashCheckLayer; // Numer warstwy "DashCheck" (używana do detekcji utknięcia).
+    
 
     [Header("Dash Trigger")]
     [SerializeField] CapsuleCollider2D dashTrigger; // Referencja do kolidera-triggera do sprawdzania utknięcia.
@@ -94,7 +96,6 @@ public class PlayerDashMovement : MonoBehaviour
     // Referencje do komponentów.
     Rigidbody2D rb;
     CapsuleCollider2D bodyCollider;
-    BoxCollider2D feetCollider;
 
     #endregion
 
@@ -106,15 +107,13 @@ public class PlayerDashMovement : MonoBehaviour
         // Pobieranie komponentów.
         rb = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<CapsuleCollider2D>();
-        feetCollider = GetComponent<BoxCollider2D>();
-        
+
         // Zapisywanie oryginalnej wartości grawitacji.
         originalGravity = rb.gravityScale;
 
         // Pobieranie numerów warstw po nazwie.
         playerLayer = gameObject.layer;
         dashLayer = LayerMask.NameToLayer("Dash");
-        dashCheckLayer = LayerMask.NameToLayer("DashCheck");
     }
 
     #endregion
@@ -300,7 +299,7 @@ public class PlayerDashMovement : MonoBehaviour
     void GroundCheck()
     {
         // Sprawdzenie, czy kolider stóp dotyka warstw "Platform" lub "Wall".
-        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall"));
+        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall", "Bounce"));
 
         // Jeśli postać jest na ziemi, resetuj czas coyote.
         if (isGrounded)
