@@ -355,12 +355,16 @@ public class PlayerDashMovement : MonoBehaviour
     }
 
     #endregion
-    
+
+    #region RoundAngle
+
     // Metoda zaokrąglająca kąt do najbliższej wielokrotności stopnia.
     float RoundAngle(float angle, float step)
     {
         return Mathf.Round(angle / step) * step;
     }
+
+    #endregion
 
     #region Dash
 
