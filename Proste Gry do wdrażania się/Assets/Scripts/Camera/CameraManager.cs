@@ -14,8 +14,8 @@ public class CameraManager : MonoBehaviour
 
     public float fallSpeedYDampingChangeThreshold = -15f;
 
-    public bool IsLerpingYDamping { get; set; }
-    public bool LerpedFromPlayerFalling { get; set; }
+    public bool IsLerpingYDamping;
+    public bool LerpedFromPlayerFalling;
 
     Coroutine lerpYPanCoroutine;
 

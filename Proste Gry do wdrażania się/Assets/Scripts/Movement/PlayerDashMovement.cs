@@ -118,14 +118,21 @@ public class PlayerDashMovement : MonoBehaviour
         bodyCollider = GetComponent<CapsuleCollider2D>();
         followCam = followCameraObj.GetComponent<FollowCameraObject>();
 
-        fallSpeedYDampingChangeThreshold = CameraManager.instance.fallSpeedYDampingChangeThreshold;
-
         // Zapisywanie oryginalnej wartości grawitacji.
         originalGravity = rb.gravityScale;
 
         // Pobieranie numerów warstw po nazwie.
         playerLayer = gameObject.layer;
         dashLayer = LayerMask.NameToLayer("Dash");
+    }
+
+    #endregion
+
+    #region Start
+
+    void Start()
+    {
+        fallSpeedYDampingChangeThreshold = CameraManager.instance.fallSpeedYDampingChangeThreshold;
     }
 
     #endregion
@@ -326,7 +333,7 @@ public class PlayerDashMovement : MonoBehaviour
     void GroundCheck()
     {
         // Sprawdzenie, czy kolider stóp dotyka warstw "Platform" lub "Wall".
-        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall", "Bounce"));
+        isGrounded = feetCollider.IsTouchingLayers(LayerMask.GetMask("Platform", "Wall","BasicWall", "Bounce"));
 
         // Jeśli postać jest na ziemi, resetuj czas coyote.
         if (isGrounded)

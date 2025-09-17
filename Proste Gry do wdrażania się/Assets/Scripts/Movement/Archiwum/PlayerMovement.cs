@@ -63,10 +63,10 @@ public class PlayerMovement : MonoBehaviour
     [Range(0.01f, 1f)] [SerializeField] float ghostLifeTime = 0.5f;
     [SerializeField] Transform ghostSpawner;
     [Range(1f, 100f)] [SerializeField] float attractionSpeed = 50f;
-    [SerializeField] float attractionStopDistance = 0.1f;
+    //[SerializeField] float attractionStopDistance = 0.1f;
     Vector2 ghostDir;
     bool isGhosting;
-    bool hasGhostedInAir = false;
+    //bool hasGhostedInAir = false;
     bool canGhostInAir = true;
     bool shouldGhost = false;
 
@@ -277,7 +277,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (!wasGrounded && isGrounded)
         {
-            hasGhostedInAir = false;
+            //hasGhostedInAir = false;
             canGhostInAir = true;
         }
     }
