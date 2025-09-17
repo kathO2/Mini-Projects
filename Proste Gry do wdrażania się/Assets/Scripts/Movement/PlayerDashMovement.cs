@@ -20,6 +20,13 @@ public class PlayerDashMovement : MonoBehaviour
 
     #endregion
 
+    #region Camera
+
+    [Header("Camera")]
+    [SerializeField] GameObject followCameraObj;
+
+    #endregion
+
     [SerializeField] BoxCollider2D feetCollider;
 
     #region  Jumping
@@ -96,6 +103,8 @@ public class PlayerDashMovement : MonoBehaviour
     // Referencje do komponentów.
     Rigidbody2D rb;
     CapsuleCollider2D bodyCollider;
+    FollowCameraObject followCam;
+    float fallSpeedYDampingChangeThreshold;
 
     #endregion
 
@@ -107,6 +116,9 @@ public class PlayerDashMovement : MonoBehaviour
         // Pobieranie komponentów.
         rb = GetComponent<Rigidbody2D>();
         bodyCollider = GetComponent<CapsuleCollider2D>();
+        followCam = followCameraObj.GetComponent<FollowCameraObject>();
+
+        fallSpeedYDampingChangeThreshold = CameraManager.instance.fallSpeedYDampingChangeThreshold;
 
         // Zapisywanie oryginalnej wartości grawitacji.
         originalGravity = rb.gravityScale;
@@ -194,6 +206,19 @@ public class PlayerDashMovement : MonoBehaviour
         {
             justDashed = false;
         }
+
+        // jeśli spadamy powyżej jakiegoś wyznacznika prędkości
+        if (rb.velocity.y < fallSpeedYDampingChangeThreshold && !CameraManager.instance.IsLerpingYDamping && !CameraManager.instance.LerpedFromPlayerFalling)
+        {
+            CameraManager.instance.LerpYDamping(true);
+        }
+
+        // jeżeli stoimy w miejscu lub poruszamy się do góry
+        if (rb.velocity.y >= 0f && !CameraManager.instance.IsLerpingYDamping && CameraManager.instance.LerpedFromPlayerFalling)
+        {
+            CameraManager.instance.LerpedFromPlayerFalling = false;
+            CameraManager.instance.LerpYDamping(false);
+        }
     }
 
     #endregion
@@ -212,13 +237,15 @@ public class PlayerDashMovement : MonoBehaviour
     #region FlipSprite
 
     // Metoda obracająca sprite w zależności od kierunku ruchu.
-    void FlipSprite()
+    public void FlipSprite()
     {
         // Sprawdzenie, czy postać się porusza.
         if (Mathf.Abs(horizontalMovement) > 0.01f)
         {
             // Zmiana skali X na -1 lub 1, aby odwrócić sprite.
             transform.localScale = new Vector2(Mathf.Sign(horizontalMovement), 1f);
+
+            followCam.CallTurn();
         }
     }
 

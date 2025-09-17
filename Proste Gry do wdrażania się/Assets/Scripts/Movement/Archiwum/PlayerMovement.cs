@@ -8,7 +8,7 @@ public class PlayerMovement : MonoBehaviour
 {
     [Header("Movement")]
     [Range(1f, 20f)] public float moveSpeed = 7f;
-    float horizontalMovement;
+    public float horizontalMovement;
 
 
     [Header("Acceleration & Deceleration")]
